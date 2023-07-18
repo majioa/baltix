@@ -44,7 +44,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
       /\/(cmake|CMakeLists.txt)$/ => :cmake,
       /\/Rookbook.props$/ => :rookbook,
       /\/GIT-VERSION-GEN$/ => :git_version_gen,
-      /\/MANIFEST$/ => :manifest,
+      /\/(MANIFEST|Manifest.txt)$/ => :manifest,
       /\/(#{Rake::Application::DEFAULT_RAKEFILES.join("|")})$/i => :app_file,
       /\.gemspec$/i => [:app_file, :yaml],
    }
@@ -100,24 +100,24 @@ class Baltix::Source::Gem < Baltix::Source::Base
 
                   result = send(method_name, f)
 
-                  result && result.objects.any? && result
+                  result && result.objects.any? && [result, method_name]
                end
 
             if load_result
-               gemspecs = load_result.objects.reject do |s|
+               gemspecs = load_result.first.objects.reject do |s|
                   s.loaded_from && s.loaded_from !~ /#{dir}/
                end.each {|x| x.loaded_from = f }.compact
-               debug("load messages:\n\t" + load_result.log.join("\n\t")) if !load_result.log.blank?
-               debug("Load errors:\n\t" + load_result.errlog.join("\n\t")) if !load_result.errlog.blank?
+               debug("load messages:\n\t" + load_result.first.log.join("\n\t")) if !load_result.first.log.blank?
+               debug("Load errors:\n\t" + load_result.errlog.join("\n\t")) if !load_result.first.errlog.blank?
 
-               res.merge({ f => gemspecs })
+               res.merge({ f => { gemspecs: gemspecs, loader: load_result.last }})
             else
                res
             end
-         end.map do |(f, gemspecs)|
+         end.map do |(f, data)|
+            gemspecs = data[:gemspecs]
             gemspecs.map do |gemspec|
-               # new_if_valid(gemspec, { source_file: f }.to_os.merge(options_in))
-               self.new(source_options(options_in.merge(spec: gemspec, source_file: f)))
+               self.new(source_options(options_in.merge(spec: gemspec, source_file: f, loader: data[:loader])))
             end
          end.flatten.compact
       end
@@ -158,7 +158,8 @@ class Baltix::Source::Gem < Baltix::Source::Base
       return @spec if @spec
 
       if aliases.any?
-         @spec ||= aliases.reduce(original_spec) { |spec, als| spec.merge(als.original_spec) }
+         @spec ||= aliases.reduce(original_spec) { |spec, als|
+           spec.merge(als.original_spec) }
       else
          original_spec
       end
@@ -331,7 +332,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
    end
 
    def uri
-      spec.homepage || aliased_uri
+      spec.homepage || spec.metadata["homepage_uri"] || aliased_uri
    end
 
    def vcs
@@ -339,11 +340,14 @@ class Baltix::Source::Gem < Baltix::Source::Base
    end
 
    def dependencies type = nil
-      (dsl.deps | deps).group_by {|x| x.name }.map do |(_name, deps)|
-         deps.reduce do |r, dep|
-            Gem::Dependency.new(r.name, r.requirement.merge(dep.requirement), [r.type, dep.type].max)
-         end
-      end.select { |dep| !type || dep.type == type }
+      (dsl.dependencies(type) | deps).group_by {|x| x.name }.reduce([]) do |res, (_name, deps)|
+         dep =
+            deps.reduce do |r, dep|
+               Gem::Dependency.new(r.name, r.requirement.merge(dep.requirement), [r.type, dep.type].max)
+            end
+
+         !type || dep.type == type ? res | [dep] : res
+      end
    end
 
    def provide
@@ -389,7 +393,6 @@ class Baltix::Source::Gem < Baltix::Source::Base
          aliased_locks[name] = false
       end
    end
-      
 
    def method_missing name, *args
       if /^aliased_(?<method>.*)/ =~ name
@@ -400,8 +403,5 @@ class Baltix::Source::Gem < Baltix::Source::Base
          super
       end
    rescue NoMethodError
-   rescue
-     binding.pry
-
    end
 end

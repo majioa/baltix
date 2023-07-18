@@ -11,7 +11,7 @@ class Baltix::CLI
    include Baltix::Log
 
    DEFAULT_OPTIONS = {
-      rootdir: Dir.pwd,
+      rootdir: nil,
       spec_type: "rpm",
       ignored_names: [],
       regarded_names: [],
@@ -23,6 +23,7 @@ class Baltix::CLI
       available_gem_list: {},
       devel_dep_baltix: :include,
       use_gem_version_list: {}.to_os,
+      use_gem_obsolete_list: {}.to_os,
       log_level: :info,
       warn_io: 'stderr',
       error_io: 'stderr',
@@ -99,6 +100,11 @@ class Baltix::CLI
                options.use_gem_version_list = options.use_gem_version_list.merge(hash)
             end
 
+            opts.on("-O", "--use-gem-obsolete=[LIST]", Array, "Comma separated gem obsolete list to forcely use in the baltix") do |gem_obsolete|
+               hash = gem_obsolete.map {|gv| gv.split(":") }.map {|(x, y)| [x, y.split(/,/)] }.to_h
+               options.use_gem_obsolete_list = options.use_gem_obsolete_list.merge(hash)
+            end
+
             opts.on("-v", "--verbose=[LEVEL]", String, "Run verbosely with levels: none, error, warn, info, or debug") do |v|
                options.log_level = v
             end
@@ -141,7 +147,7 @@ class Baltix::CLI
    end
 
    def space
-      @space ||= Baltix::Space.load_from(nil, parse.options)
+      @space ||= Baltix::Space.load_from(options: parse.options)
    end
 
    def space= value
@@ -158,7 +164,6 @@ class Baltix::CLI
       end
    rescue SystemExit, Interrupt
    rescue Exception => e
-      binding.pry
       error("[#{e.class}]: #{e.message}\n\t#{e.backtrace.join("\n\t")}")
    end
 

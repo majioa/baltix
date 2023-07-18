@@ -1,11 +1,11 @@
 require 'baltix/source/base'
-require 'baltix/rake_app'
+require 'baltix/rake'
 
 class Baltix::Source::Rakefile < Baltix::Source::Base
    class << self
       def search dir, options_in = {}
          Dir.glob("#{dir}/**/Rakefile", File::FNM_DOTMATCH).select {|f| File.file?(f) }.map do |f|
-            self.new(source_options({ source_file: f }.to_os.merge(options_in)))
+            self.new(source_options({ source_file: f, loader: :rakefile }.to_os.merge(options_in)))
          end
       end
    end

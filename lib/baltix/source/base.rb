@@ -44,6 +44,7 @@ class Baltix::Source::Base
       version_replaces: true,
       gem_version_replace: true,
       source_file: ->(file, _name) { file.is_a?(String) && File.file?(file) && file || nil },
+      loader: true,
       gemspec: true,
       source_names: true,
       name: true,
@@ -78,7 +79,7 @@ class Baltix::Source::Base
       "source-state-folders": true,
    }
 
-   attr_reader :options, :source_file
+   attr_reader :options, :source_file, :loader
    attr_writer :replace_list, :source_names
 
    class << self
@@ -309,7 +310,7 @@ class Baltix::Source::Base
    end
 
    def provide
-      Gem::Dependency.new(name)
+      Gem::Dependency.new(name, "= #{version || "0"}")
    end
 
    # +summaries+ returns an open-struct formatted summaries with a default locale as a key
@@ -326,7 +327,15 @@ class Baltix::Source::Base
    end
 
    def dependencies *types
-     definition&.dependencies&.select {|dep| types.empty? || types.include?(dep.type) } || []
+      if definition
+         definition.dependencies.select {|dep| types.empty? || types.include?(dep.type) }
+      else
+         []
+      end
+   end
+
+   def development_dependencies
+      Baltix::DSL.merge_dependencies(*Baltix::DSL.filter_dependencies(:development, definition.dependencies, spec.dependencies))
    end
 
    def licenses
@@ -417,6 +426,8 @@ class Baltix::Source::Base
    #
    def initialize options_in = {}
       parse(options_in)
+
+      @loader ||= self.class.to_s.split('::').last.downcase.to_sym
    end
 
    def parse options_in

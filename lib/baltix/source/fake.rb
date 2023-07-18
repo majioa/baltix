@@ -1,4 +1,8 @@
 class Baltix::Source::Fake < Baltix::Source::Base
+   OPTIONS_IN = {
+      source_file: true,
+   }
+
    def dsl
       @dsl ||=
          Baltix::DSL.new(source_file,

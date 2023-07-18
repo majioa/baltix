@@ -1,0 +1,188 @@
+<% if has_comment? -%>
+<%= comment -%>
+<% end -%>
+<% if source.is_a?(Baltix::Source::Gem) -%>
+%define        _unpackaged_files_terminate_build 1
+%define        gemname <%= source.name %>
+
+<% end -%>
+Name:          <%= name %>
+<% if has_epoch? -%>
+Epoch:         <%= epoch %>
+<% end -%>
+Version:       <%= version %>
+Release:       <%= release %>
+<% summaries.each_pair do |cp, summary| -%>
+Summary<%= Baltix::I18n.is_default?(cp) ? nil : "(#{cp})" %>:<%= " " * (Baltix::I18n.is_default?(cp) ? 7 : 1 ) %><%= summary %>
+<% end -%>
+License:       <%= licenses.join(" or ") %>
+Group:         <%= group %>
+Url:           <%= uri %>
+<% if has_vcs? -%>
+Vcs:           <%= vcs %>
+<% end -%>
+Packager:      <%= packager.name %> <<%= packager.email %>>
+<% unless is_lib? and has_compilables? -%>
+BuildArch:     <%= build_arch %>
+<% end -%>
+
+<% source_files.each_pair do |i, source_file| -%>
+Source<%= i == :"0" && (i = "") || i %>:<%= " " * [ 8 - "#{i}".size, 1 ].max %><%= source_file %>
+<% end -%>
+<% patches.each_pair do |i, patch| -%>
+Patch<%= i == :"0" && (i = "") || i %>:<%= " " * [ 9 - "#{i}".size, 1 ].max %><%= patch %>
+<% end -%>
+<% build_pre_requires.each do |dep| -%>
+BuildRequires(pre): <%= dep %>
+<% end -%>
+<% pure_build_requires.each do |dep| -%>
+BuildRequires: <%= dep %>
+<% end -%>
+<% pure_build_conflicts.each do |dep| -%>
+BuildRequires: <%= dep %>
+<% end -%>
+<% if has_gem_build_requires? || has_gem_build_conflicts? -%>
+%if_with check
+<% gem_build_requires.each do |dep| -%>
+BuildRequires: <%= dep %>
+<% end -%>
+<% gem_build_conflicts.each do |dep| -%>
+BuildConflicts: <%= dep %>
+<% end -%>
+%endif
+<% end -%>
+
+%add_findreq_skiplist %ruby_gemslibdir/**/*
+%add_findprov_skiplist %ruby_gemslibdir/**/*
+<% versioned_gem_list.each do |name, req| -%>
+%ruby_use_gem_dependency <%= req.requirement.requirements.map { |(rel, ver)| "#{name} #{rel} #{ver}" }.join(",") %>
+<% end -%>
+<% ruby_alias_names.each do |aliases| -%>
+%ruby_alias_names <%= aliases.join(",") %>
+<% end -%>
+<% if has_ignored_names? -%>
+%ruby_ignore_names <%= ignored_names.join(",") %>
+<% end -%>
+<% requires.each do |dep| -%>
+Requires:      <%= dep %>
+<% end -%>
+<% conflicts.each do |dep| -%>
+Conflicts:     <%= dep %>
+<% end -%>
+<% obsoletes.each do |dep| -%>
+Obsoletes:     <%= dep %>
+<% end -%>
+<% provides.each do |dep| -%>
+Provides:      <%= dep %>
+<% end -%>
+
+<% if has_rake_build_tasks? or has_use_gem_version_list? -%>
+<% use_gem_version_list.each do |name, dep| -%>
+%ruby_use_gem_version <%= name %>:<%= dep.requirement.requirements.first.last %>
+<% end -%>
+<% if has_rake_build_tasks? -%>
+%ruby_on_build_rake_tasks <%= rake_build_tasks.join(",") %>
+<% end -%>
+
+<% end -%>
+<% descriptions.each_pair do |cp, description| -%>
+%description<%= Baltix::I18n.is_default?(cp) ? nil : "         -l #{cp}" %>
+<%= description %>
+
+<% end -%>
+
+<% valid_secondaries.each do |secondary| -%>
+%package       -n <%= secondary.name %>
+Version:       <%= secondary.version %>
+Release:       <%= secondary.release %>
+<% secondary.summaries.each_pair do |cp, summary| -%>
+Summary<%= Baltix::I18n.is_default?(cp) ? nil : "(#{cp})" %>:<%= " " * (Baltix::I18n.is_default?(cp) ? 7 : 1 ) %><%= summary %>
+<% end -%>
+Group:         <%= secondary.group %>
+<% unless secondary.is_lib? and secondary.has_compilables? -%>
+BuildArch:     <%= secondary.build_arch %>
+<% end -%>
+
+<% secondary.requires.each do |dep| -%>
+Requires:      <%= dep %>
+<% end -%>
+<% secondary.conflicts.each do |dep| -%>
+Conflicts:     <%= dep %>
+<% end -%>
+<% secondary.obsoletes.each do |dep| -%>
+Obsoletes:     <%= dep %>
+<% end -%>
+<% secondary.provides.each do |dep| -%>
+Provides:      <%= dep %>
+<% end -%>
+
+<% secondary.descriptions.each_pair do |cp, description| -%>
+%description   -n <%= secondary.name %><%= Baltix::I18n.is_default?(cp) ? nil : " -l #{cp}" %>
+<%= description %>
+
+<% end -%>
+
+<% end -%>
+%prep
+%setup
+<% if has_patches? -%>
+%autopatch
+<% end -%>
+
+%build
+%ruby_build
+
+%install
+%ruby_install
+
+%check
+%ruby_test
+
+%files
+<% if has_readme? -%>
+%doc <%= readme %>
+<% end -%>
+%ruby_gemspec
+%ruby_gemlibdir
+<% if has_compilables? -%>
+%ruby_gemextdir
+<% end -%>
+
+<% valid_secondaries.each do |secondary| -%>
+%files         -n <%= secondary.name %>
+<% if secondary.has_readme? -%>
+%doc <%= secondary.readme %>
+<% end -%>
+<% if secondary.is_lib? -%>
+%ruby_gemspecdir/<%= secondary.source&.name || secondary.name %>-<%= secondary.version %>.gemspec
+%ruby_gemslibdir/<%= secondary.source&.name || secondary.name %>-<%= secondary.version %>
+<% if secondary.has_compilables? -%>
+%ruby_gemsextdir/<%= secondary.source&.name || secondary.name %>-<%= secondary.version %>
+<% end -%>
+<% end -%>
+<% if secondary.is_exec? -%>
+<% secondary.executables.each do |e| -%>
+%_bindir/<%= e %>
+<% end -%>
+<% end -%>
+<% if secondary.is_doc? -%>
+<% if secondary.spec.is_same_source?(secondary.source) -%>
+%ruby_gemdocdir
+<% else -%>
+%ruby_gemsdocdir/<%= secondary.source&.name || secondary.name %>-<%= secondary.version %>
+<% end -%>
+<% end -%>
+<% if secondary.is_devel? -%>
+<% if secondary.has_devel_sources? -%>
+%ruby_includedir/*
+<% end -%>
+<% end -%>
+
+<% end -%>
+
+%changelog
+<% changes.reverse.each do |c| -%>
+* <%= c.date %> <%= c.author %> <%= c.email && "<#{c.email}>" || "" %> <%= [ c.epoch, [ c.version, c.release ].compact.join("-") ].compact.join(":") %>
+<%= c.description %>
+
+<% end -%>

@@ -1,5 +1,7 @@
 # vim: noai:ts=3:sts=3:et:sw=3
 # Actor spec
+require 'baltix/spec'
+
 module Baltix::Actor::Spec
    class << self
       def context_kind

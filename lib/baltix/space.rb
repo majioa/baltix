@@ -3,6 +3,8 @@ require 'rubygems'
 require 'baltix/version'
 require 'baltix/log'
 require 'baltix/source'
+require 'baltix/spec'
+require 'baltix/cli'
 
 class Baltix::Space
    include Baltix::Log
@@ -20,6 +22,7 @@ class Baltix::Space
    }
 
    TYPE_CHARS = {
+      fake: '·',
       gem: '*',
       gemfile: '&',
       rakefile: '^',
@@ -42,7 +45,7 @@ class Baltix::Space
    #
    # options #=> {...}
    #
-   attr_reader :options
+   attr_reader :options, :state
 
    # +name+ returns a default name of the space with a prefix if any. It returns name of a source when
    # its root is the same as the space's root, or returns name defined in the spec if any.
@@ -53,7 +56,7 @@ class Baltix::Space
    def name
       return @name if @name
 
-      @name = main_source&.name || spec&.name
+      @name = spec&.name || main_source&.name
    end
 
    # +version+ returns a default version for the space. Returns version of a source when
@@ -116,10 +119,10 @@ class Baltix::Space
    def summaries
       return @summaries if @summaries
 
-      if summaries = spec&.summaries
+      if summaries = spec&.summaries || state.summaries
          summaries
       elsif summary = main_source&.summary
-         { "" => summary }.to_os
+         { Baltix::I18n.default_locale => summary }.to_os
       end
    end
 
@@ -241,6 +244,7 @@ class Baltix::Space
 
    def is_disabled? source
       options.ignored_path_tokens.any? { |t| /\/#{t}\// =~ source.source_file } ||
+         options.regarded_names.all? { |i| !i.match?(source.name) } &&
          options.ignored_names.any? { |i| i === source.name }
    end
 
@@ -253,32 +257,29 @@ class Baltix::Space
          if spec_pre.is_a?(Baltix::Spec::Rpm)
             spec_pre
          elsif spec_pre.is_a?(String)
-            YAML.load(spec_pre)
+            self.class.load(spec_pre)
          elsif options&.spec_file
-            Baltix::Spec.load_from(IO.read(options.spec_file), options)
-         elsif @spec_type || options&.spec_typae
-            Baltix::Spec.find(@spec_type || options.spec_type).new
+            Baltix::Spec.load_from(source: IO.read(options.spec_file), options: options, space: self)
+         elsif @spec_type || options&.spec_type
+            Baltix::Spec.find(@spec_type || options.spec_type).new(options: options, space: self)
          end
 
-      if @spec
-         @spec.options = options_for(@spec.class)
-      end
+      @spec.assign_space(self) if @spec
 
       @spec
    end
 
    def initialize state_in = {}, options = {}
-      @options = (options || {}).to_os
+      @options = Baltix::CLI::DEFAULT_OPTIONS.merge(options || {})
       @state = (state_in || {}).to_os
 
       baltix_log
-      show_tree
    end
 
    # init log
    def baltix_log
       ios = DEFAULT_IO_NAMES.merge(%i(error warn info debug).map {|k| [k, options["#{k}_io"]]}.to_h)
-      Baltix::Log.baltix(options.log_level.to_sym, ios)
+      Baltix::Log.setup(options.log_level.to_sym, ios)
    end
 
    def show_tree
@@ -300,12 +301,13 @@ class Baltix::Space
    def stat_sources &block
       return @stat_sources if @stat_sources
 
-      @stat_sources = read_attribute(:stat_sources) || Baltix::Source.search_in(rootdir, options).group_by do |x|
+      @stat_sources =
+         read_attribute(:stat_sources) || Baltix::Source.search_in(rootdir, options).group_by do |x|
             [x.name, x.version].compact.join(":")
          end.map do |(full_name, v)|
             sorten =
                v.sort do |x,y|
-                  c0 = Baltix::Source::TYPES.values.index(x.class.to_s) <=> Baltix::Source::TYPES.values.index(y.class.to_s)
+                  c0 = ::Baltix::Source.loaders.index(x.loader) <=> ::Baltix::Source.loaders.index(y.loader)
                   c1 = c0 == 0 && x.name <=> y.name || c0
                   c2 = c1 == 0 && y.version <=> x.version || c1
                   c3 = c2 == 0 && y.platform <=> x.platform || c2
@@ -325,6 +327,10 @@ class Baltix::Space
          end.flatten(1).sort_by {|(x, _)| x.rootdir.size }.each do |(source, status)|
             block[source, status] if block_given?
          end
+
+      show_tree
+
+      @stat_sources
    end
 
    # returns source tree, and sorted, and then grouped by a its rootdir value
@@ -332,7 +338,7 @@ class Baltix::Space
    def stat_source_tree
       @stat_source_tree ||=
          stat_sources.group_by {|(x, _)| x.rootdir }.map do |(path, sources)|
-            [File.join('.', path[rootdir.size..-1]), sources]
+            [File.join('.', path[rootdir.size..-1] || ''), sources]
          end.to_h
    end
 
@@ -354,31 +360,61 @@ class Baltix::Space
          (spec.send(method) rescue nil) ||
          options&.[](method) ||
          spec&.options&.[](method.to_s) ||
+         state[method]
 
       instance_variable_set(:"@#{method}", value || super)
+
+      value
    end
 
    class << self
-      def load_from! state_in = Dir[".space"].first, options = {}
-#         system_path_check # TODO required to generate spec rubocop
-
-         state = case state_in
-         when IO, StringIO
-            YAML.load(state_in.readlines.join(""))
-         when String
-            raise InvalidSpaceFileError.new(state_in: state_in) if !File.file?(state_in)
-
-            YAML.load(IO.read(state_in))
-         when NilClass
+      def load string
+         if Gem::Version.new(Psych::VERSION) >= Gem::Version.new("4.0.0")
+            YAML.load(string,
+               aliases: true,
+               permitted_classes: [
+                  Baltix::Source::Fake,
+                  Baltix::Source::Rakefile,
+                  Baltix::Source::Gemfile,
+                  Baltix::Source::Gem,
+                  Baltix::Spec::Rpm,
+                  Baltix::Spec::Rpm::Name,
+                  Baltix::Spec::Rpm::Secondary,
+                  Gem::Specification,
+                  Gem::Version,
+                  Gem::Dependency,
+                  Gem::Requirement,
+                  OpenStruct,
+                  Symbol,
+                  Time,
+                  Date
+               ])
          else
-            raise InvalidSpaceFileError
-         end.to_os
-
-         @@space[state.name] = self.new(state, options)
+            YAML.load(string)
+         end
       end
 
-      def load_from state_in = Dir[".space"].first, options = {}
-         load_from!(state_in, options)
+      def load_from! state: Dir[".space"].first, options: {}
+#         system_path_check # TODO required to generate spec rubocop
+
+         state_tmp =
+            case state
+            when IO, StringIO
+               load(state.readlines.join(""))
+            when String
+               raise InvalidSpaceFileError.new(state: state) if !File.file?(state)
+
+               load(IO.read(state))
+            when NilClass
+            else
+               raise InvalidSpaceFileError
+            end.to_os
+
+         @@space[state_tmp.name] = self.new(state_tmp, options)
+      end
+
+      def load_from state: Dir[".space"].first, options: {}
+         load_from!(state: state, options: options)
       rescue InvalidSpaceFileError
          @@space[nil] = new(nil, options)
       end

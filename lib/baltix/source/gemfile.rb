@@ -5,7 +5,7 @@ class Baltix::Source::Gemfile < Baltix::Source::Base
    class << self
       def search dir, options_in = {}
          Dir.glob("#{dir}/**/Gemfile", File::FNM_DOTMATCH).select {|f| File.file?(f) }.map do |f|
-            self.new(source_options({ source_file: f }.to_os.merge(options_in)))
+            self.new(source_options({ source_file: f, loader: :gemfile }.to_os.merge(options_in)))
          end
       end
    end

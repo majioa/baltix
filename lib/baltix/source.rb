@@ -10,7 +10,8 @@ module ::Baltix::Source
       end
 
    class << self
-      def search_in dir, options = {}
+      def search_in dir_in, options = {}
+         dir = File.expand_path(dir_in)
          sources_pre =
             TYPES.map do |(name, const)|
                kls = self.const_get(const)
@@ -40,6 +41,17 @@ module ::Baltix::Source
             require("baltix/source/#{type_code}")
             TYPES[type_code].constantize.new(source_in)
          end
+      end
+
+      def loaders
+         @loaders ||=
+            TYPES.map do |type, mod|
+               if mod.constantize.constants.include?(:LOADERS)
+                  mod.constantize.const_get(:LOADERS).values
+               else
+                  type
+               end
+            end.flatten.uniq
       end
    end
 end
