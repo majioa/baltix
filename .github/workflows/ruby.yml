@@ -13,6 +13,10 @@ on:
   pull_request:
     branches: [ "master" ]
 
+env:
+  CODACY_PROJECT_TOKEN: "a1d8e09e34cc43c68cade0c196463c57"
+  COVERAGE: true
+
 permissions:
   contents: read
 
@@ -36,3 +40,5 @@ jobs:
         bundler-cache: true # runs 'bundle install' and caches installed gems automatically
     - name: Run tests
       run: bundle exec rake
+    - name: Update Codaci Coveralls
+      run: bash <(curl -Ls https://coverage.codacy.com/get.sh)

@@ -33,4 +33,6 @@ Gem::Specification.new do |spec|
    spec.add_development_dependency "cucumber", "~> 5.2"
    spec.add_development_dependency "shoulda-matchers-cucumber", "~> 1.0", ">= 1.0.1"
    spec.add_development_dependency "timecop"
+   spec.add_development_dependency "simplecov"
+   spec.add_development_dependency "simplecov-lcov"
 end

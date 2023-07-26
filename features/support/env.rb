@@ -1,9 +1,14 @@
 require 'pry'
 require 'shoulda-matchers/cucumber'
 require 'timecop'
+require 'simplecov'
+require 'simplecov-lcov'
 
 require 'baltix'
 require 'baltix/cli'
+
+SimpleCov.formatter = SimpleCov::Formatter::LcovFormatter
+SimpleCov.start if ENV["COVERAGE"]
 
 Shoulda::Matchers.configure do |config|
    config.integrate do |with|
