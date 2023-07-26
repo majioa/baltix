@@ -1,8 +1,16 @@
 # Baltix
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/baltix`. To experiment with that code, run `bin/console` for an interactive prompt.
+Dependency detector, and spec generator and reader for projects based on the Ruby.
 
-TODO: Delete this and the text above, and describe your gem
+## Status
+
+[![GitHub](http://img.shields.io/badge/github-majioa/baltix-blue.svg)](http://github.com/majioa/baltix)
+[![GitHub tag](https://img.shields.io/github/tag/majioa/baltix.svg)](https://github.com/majioa/baltix/tags/)
+[![Open Source? Yes!](https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/majioa/baltix)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Ruby Github Action](https://github.com/majioa/baltix/actions/workflows/ruby.yml/badge.svg)](https://github.com/majioa/baltix/actions/workflows/ruby.yml)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a1d8e09e34cc43c68cade0c196463c57)](https://www.codacy.com/gh/majioa/baltix/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=majioa/baltix&amp;utm_campaign=Badge_Grade)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/majioa/baltix/pulls)
 
 ## Installation
 
@@ -22,7 +30,16 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+### From a Command Line
+
+When you are creating a spec for the space from a scratch sample call may be as follows:
+
+    $ sudo /usr/bin/setup.rb -o $(echo $(pwd)|sed "s|.*/||").spec  --maintainer-name="Pavel Skrylev" --maintainer-email="majioa@altlinux.org" -g/home/majioa/available-list.yaml spec --debug-io=- --verbose=debug --ignore-path-tokens=templates,example,examples,sample,samples,spec,test,features,fixtures,doc,docs,contrib,demo,acceptance,conformance,myapp,website,benchmarks,benchmark,gemfiles,misc,steep  2>/dev/null; sudo chown majioa:majioa . -R
+
+When you are updating the spec do something like:
+
+    $ sudo /usr/bin/setup.rb -s $(find -name "*.spec~") -o _.spec  --maintainer-name="Pavel Skrylev" --maintainer-email="majioa@altlinux.org" -g/home/majioa/available-list.yaml spec --debug-io=- --verbose=debug --ignore-path-tokens=templates,example,examples,sample,samples,spec,test,features,fixtures,doc,docs,contrib,demo,acceptance,conformance,myapp,website,benchmarks,benchmark,gemfiles,misc,steep  2>/dev/null; sudo chown majioa:majioa . -R
+
 
 ## Development
 
@@ -30,7 +47,17 @@ After checking out the repo, run `bin/setup` to install dependencies. You can al
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+## Test
+
+To run tests written in Cucumber's Gherkin just run:
+
+    $ cucumber
+
+or you are able to run them with rake as a default task:
+
+    $ bundle exec rake
+
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/baltix.
+Bug reports and pull requests are welcome on GitHub at https://github.com/majioa/baltix.
 
