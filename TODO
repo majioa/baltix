@@ -1,0 +1,84 @@
+-----
+fix:
+lost runtime deps
+---
+- add disable source (for ruby-rubygems-update)
+- add return to common space on load (for ruby-rails)
+- add doc compilation only over included lib files
+- validate provides/requires detection speed on gem-google-api-client , azure-sdk
+
+
+- spec
+  wrongdoc/olddoc - kgio
+  hoe - hoe/racc
+  bones - loquacious/bones
+
+- validate spec for gem rdoc (rdoc/ri) - muliple executables
+
++ generate spec for:
+ - gem:multi_test,parser 2x -> 3x
+ - app:cucumber_common - blank root (Fake Source) / Url, Vsc, summary, description, filters for blank packages, dedup packages by name
+
+
+ - rubyzip  old -> new
+ - check rubocop *.h adding in devel pkg, bo they are absent
+ - coveralls with %ruby_use_gem_dependency, 0.8.23-alt2 -> 0.8.23.1-alt0.1 (увеличение версии с помоїью командной строки или анализа git),and Epoch =1
+ - google-cloud-ruby - deduplication of build req list for gems: simplecov
+ - photobuf - noarch with so packages
+ - grpc - custom root - grpc, and not gem-grpc
+ - googleauth - alias to google-auth
+ - google-api-ruby-client: correct spec, filter by regexp to ignore-names, validate build
+ - digest-crc - developmnt gems from Gemfile, valid loading the Gemfile with fixed deps
+ - gapic-generator-ruby
+  - filterout README.erb, alow pure, or .md/rdoc/.../
+  - add README with offset paths to the root source
+ - chef 15->17
++ uniq name for spe %doc: README.md can't be multiple
++ generate relative symlinks instead of absolute for execs
++ filter out desc and summary char to other like "’" -> "'"
++ filter out names with path "test/spec/feature/fixture/sandbox": example "turn" gem
++ ignore by part: example: update-rubygems[doc,lib] to ignore when detecting and processing
+
+gem-ascii85 - capital name
+
+gem-lemon update stable ver to unstable
+gem-compass - multi gem deps in build requiers (sass), embedded gem = instead of >=, markdown extension for readme, false absent README.md generated in spec
+license-scout - README lost
+
+gettext-setup - invalid ruby_alias_names when genspec
+async-rspec - blank description
+gem-treetop - break epoch
+gem-nokogiri - crop changelog, fix gem deps on the file  (example for mini_portile2, see patch)
+prometheus-client - invalid dep tags when is in available list
+ruby-rc4 - ruby isnt prefix, leads to ruby-ruby-rc4
+facets - new spec invalid type dependencies runtime  instead devel
+ffi - 1. git describe --tags command to fix in gemspec; 2. update to 1.15.5 add the wrnog tag
+passenger - minon require list check, because when rebuild spec it losts some things
+digest-crc - lost rake task on update to 0.6.4
+io-event - erroneous update form event
+idn-ruby - can't detect extension
+net-http-persistent - invalid update to 4.0.1
+hoe-bunder - crop long patch number for v.5.0
+oj - expand and crop summary when update to 3.13.11
+hoe-travis - lost description on update
+ruby-shadow - lost license on update unlicense replace with specified default + license replace list args
+unf_ext - invalid dep ruby_use_gem_dependency
+rdoc - update to new version break generate a valid new spec if the gem in available gem list adding unnecesary tag
+hiredis - invalid ruby_use_gem_dependency when generated updated spec
+
+glu,glut,kpeg - development deps, merge them correct
+data-objects - main source valid detection
+
+fix build dep for ruby-gnome2 -> gem-cairo-devel -> gem-poppler(ruby-gnome2)
+
+?raindrops
+?capybara ^ -> 3.37.1
+
+vcs_url for snaky_hash gem
+
+определение жемов для руби и жемов в ruby_version напрмер
+[setup.rb][INFO]> X *RubyGems:3.3.7 [./Rakefile]
+[setup.rb][INFO]> X *Ruby:3.1.1.18 [./Rakefile]
+
+
+структура дерева mustermann и обьединение жемов из подпроектов, если они одноимённые:), а также определение группы в Gemfile
