@@ -8,7 +8,7 @@ Dependency detector, and spec generator and reader for projects based on the Rub
 [![GitHub tag](https://img.shields.io/github/tag/majioa/baltix.svg)](https://github.com/majioa/baltix/tags/)
 [![Open Source? Yes!](https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/majioa/baltix)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Ruby Github Action](https://github.com/majioa/baltix/actions/workflows/ruby.yml/badge.svg)](https://github.com/majioa/baltix/actions/workflows/ruby.yml)
+[![Ruby Github Action](https://github.com/majioa/baltix/actions/workflows/ci.yml/badge.svg)](https://github.com/majioa/baltix/actions/workflows/ci.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4d99e63d3d7349d5adfdbc4250666ef2)](https://app.codacy.com/gh/majioa/baltix/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/4d99e63d3d7349d5adfdbc4250666ef2)](https://app.codacy.com/gh/majioa/baltix/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/majioa/baltix/pulls)
