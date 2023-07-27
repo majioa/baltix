@@ -5,6 +5,7 @@ Gem::Specification.new do |spec|
    spec.version       = Baltix::VERSION
    spec.authors       = ["Pavel Skrylev"]
    spec.email         = ["majioa@altlinux.org"]
+   spec.licenses      = ["MIT"]
 
    spec.summary       = %q{Baltix is setup replacement and spec control utility for RPM/local packages}
    spec.description   = %q{Baltix is setup replacement and spec control utility for RPM/local packages}
