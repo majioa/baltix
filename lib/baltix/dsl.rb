@@ -14,7 +14,7 @@ class Baltix::DSL
       test: :development,
       debug: :development,
       production: :runtime,
-      true => :development,
+      true => :runtime,
    }.reduce(Hash.new(:development)) {|r,(k,v)| r.merge(k => v) }
 
    # attributes
@@ -134,7 +134,7 @@ class Baltix::DSL
    end
 
    def gemspecs
-      dsl.gemspecs | [spec].compact
+      spec ? [spec] : dsl.gemspecs
    end
 
    def extracted_gemspec_deps
@@ -202,7 +202,7 @@ class Baltix::DSL
    end
 
    def deps
-      deps_but(original_deps)
+      deps_but(original_deps) | gemspec_deps
    end
 
    def gemspec_deps

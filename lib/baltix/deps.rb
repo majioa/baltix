@@ -83,18 +83,17 @@ class Baltix::Deps
       list = []
 
       deps.each do |dep|
-         self.class.lower_to_rpm(dep.requirement).map do |a, b|
-            list << "gem(#{dep.name}) #{a} #{b}"
-         end
+         list << (["#{prefix}(#{dep.name})"] | self.class.lower_to_rpm(dep.requirement)).join(" ")
       end
 
-      ruby = dsl.required_ruby
-      ruby_version = dsl.required_ruby_version
-      rubygems_version = dsl.required_rubygems_version
-
       if /lib|bin/ =~ set
-         list << self.class.lower_to_rpm(ruby_version).map { |a, b| "#{ruby} #{a} #{b}" }
-         list << "rubygems #{rubygems_version}"
+         list |=
+            dsl.required_ruby_version.requirements.map do |(cond, ver)|
+               self.class.lower_to_rpm(Gem::Requirement.new("#{cond} #{ver}"))
+            end.reject {|x| x.blank? }.map do |req|
+               [dsl.required_ruby] | req
+            end.map {|x| x.join(" ") }
+         list << "rubygems #{dsl.required_rubygems_version}"
       end
 
       list
