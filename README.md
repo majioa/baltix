@@ -18,16 +18,12 @@ Dependency detector, and spec generator and reader for projects based on the Rub
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'baltix'
+gem 'baltix', github: "majioa/baltix"
 ```
 
 And then execute:
 
     $ bundle install
-
-Or install it yourself as:
-
-    $ gem install baltix
 
 ## Usage
 
