@@ -25,6 +25,10 @@ And then execute:
 
     $ bundle install
 
+Or install it yourself as:
+
+    $ gem install baltix
+
 ## Usage
 
 ### From a Command Line
