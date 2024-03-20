@@ -1,4 +1,6 @@
 %define        _unpackaged_files_terminate_build 1
+%def_enable    check
+%def_enable    doc
 %define        gemname rspec-support
 
 Name:          gem-rspec-support
@@ -14,7 +16,7 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-%if_with check
+%if_enabled check
 BuildRequires: gem(rake) > 10.0.0
 BuildRequires: gem(thread_order) >= 1.1.0
 BuildConflicts: gem(thread_order) >= 1.2
@@ -32,6 +34,7 @@ RSpec::Support provides common functionality to RSpec::Core, RSpec::Expectations
 and RSpec::Mocks. It is considered suitable for internal use only at this time.
 
 
+%if_enabled    doc
 %package       -n gem-rspec-support-doc
 Version:       3.8.0
 Release:       alt2.1
@@ -50,6 +53,7 @@ and RSpec::Mocks. It is considered suitable for internal use only at this time.
 
 %description   -n gem-rspec-support-doc -l ru_RU.UTF-8
 Файлы сведений для самоцвета rspec-support.
+%endif
 
 
 %prep
@@ -69,9 +73,11 @@ and RSpec::Mocks. It is considered suitable for internal use only at this time.
 %ruby_gemspec
 %ruby_gemlibdir
 
+%if_enabled    doc
 %files         -n gem-rspec-support-doc
 %doc README.md
 %ruby_gemdocdir
+%endif
 
 
 %changelog

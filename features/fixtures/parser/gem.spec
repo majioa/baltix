@@ -1,4 +1,7 @@
 %define        _unpackaged_files_terminate_build 1
+%def_enable    check
+%def_enable    doc
+%def_enable    devel
 %define        gemname parser
 
 Name:          gem-parser
@@ -16,7 +19,7 @@ Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
 BuildRequires: racc
 BuildRequires: ragel
-%if_with check
+%if_enabled check
 BuildRequires: gem(ast) >= 2.4.1
 BuildRequires: gem(bundler) >= 1.15
 BuildRequires: gem(cliver) >= 0.3.2
@@ -78,6 +81,7 @@ You can also use unparser to produce equivalent source code from Parser's ASTs.
 Исполнямка для самоцвета parser.
 
 
+%if_enabled    doc
 %package       -n gem-parser-doc
 Version:       3.0.1.1
 Release:       alt1
@@ -99,8 +103,10 @@ You can also use unparser to produce equivalent source code from Parser's ASTs.
 
 %description   -n gem-parser-doc -l ru_RU.UTF-8
 Файлы сведений для самоцвета parser.
+%endif
 
 
+%if_enabled    devel
 %package       -n gem-parser-devel
 Version:       3.0.1.1
 Release:       alt1
@@ -137,6 +143,7 @@ You can also use unparser to produce equivalent source code from Parser's ASTs.
 
 %description   -n gem-parser-devel -l ru_RU.UTF-8
 Файлы для разработки самоцвета parser.
+%endif
 
 
 %prep
@@ -159,10 +166,14 @@ You can also use unparser to produce equivalent source code from Parser's ASTs.
 %_bindir/ruby-parse
 %_bindir/ruby-rewrite
 
+%if_enabled    doc
 %files         -n gem-parser-doc
 %ruby_gemdocdir
+%endif
 
+%if_enabled    devel
 %files         -n gem-parser-devel
+%endif
 
 
 %changelog

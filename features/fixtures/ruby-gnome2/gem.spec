@@ -1,3 +1,7 @@
+%define        _unpackaged_files_terminate_build 1
+%def_enable    check
+%def_enable    doc
+
 Name:          ruby-gnome2
 Version:       3.5.1
 Release:       alt1
@@ -57,7 +61,7 @@ BuildRequires: libpango-devel
 BuildRequires: gst-plugins-devel
 BuildRequires: gcc-c++
 BuildRequires: libbrotli-devel
-%if_with check
+%if_enabled check
 BuildRequires: gem(cairo) >= 0
 BuildRequires: gem(native-package-installer) >= 1.0.3
 BuildRequires: gem(pkg-config) >= 1.3.5
@@ -76,6 +80,7 @@ This is a set of bindings for the GNOME 2.x and 3.x libraries to use from Ruby
 2.1, 2.2, 2.3 and 2.4.
 
 
+%if_enabled    devel
 %package       -n ruby-gnome2-devel
 Version:       3.5.1
 Release:       alt1
@@ -100,6 +105,7 @@ This is a set of bindings for the GNOME 2.x and 3.x libraries to use from Ruby
 
 %description   -n ruby-gnome2-devel -l ru_RU.UTF-8
 Файлы для разработки самоцвета ruby-gnome2.
+%endif
 
 
 %package       -n gem-glib2
@@ -121,6 +127,7 @@ It is most likely useful in conjunction with Ruby bindings for other libraries
 such as GTK+.
 
 
+%if_enabled    devel
 %package       -n gem-glib2-devel
 Version:       3.5.1
 Release:       alt1
@@ -144,8 +151,10 @@ such as GTK+.
 
 %description   -n gem-glib2-devel -l ru_RU.UTF-8
 Файлы для разработки самоцвета glib2.
+%endif
 
 
+%if_enabled    doc
 %package       -n gem-glib2-doc
 Version:       3.5.1
 Release:       alt1
@@ -168,6 +177,7 @@ such as GTK+.
 
 %description   -n gem-glib2-doc -l ru_RU.UTF-8
 Файлы сведений для самоцвета glib2.
+%endif
 
 
 %package       -n gem-vte3
@@ -183,6 +193,7 @@ Provides:      gem(vte3) = 3.5.1
 Ruby/VTE3 is a Ruby binding of VTE for use with GTK3.
 
 
+%if_enabled    devel
 %package       -n gem-vte3-devel
 Version:       3.5.1
 Release:       alt1
@@ -198,8 +209,10 @@ Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 development package.
 
 %description   -n gem-vte3-devel -l ru_RU.UTF-8
 Файлы для разработки самоцвета vte3.
+%endif
 
 
+%if_enabled    doc
 %package       -n gem-vte3-doc
 Version:       3.5.1
 Release:       alt1
@@ -215,6 +228,7 @@ Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files.
 
 %description   -n gem-vte3-doc -l ru_RU.UTF-8
 Файлы сведений для самоцвета vte3.
+%endif
 
 
 %prep
@@ -233,7 +247,9 @@ Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files.
 %ruby_gemspec
 %ruby_gemlibdir
 
+%if_enabled    devel
 %files         -n ruby-gnome2-devel
+%endif
 
 %files         -n gem-glib2
 %doc README.md
@@ -241,13 +257,17 @@ Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files.
 %ruby_gemslibdir/glib2-3.5.1
 %ruby_gemsextdir/glib2-3.5.1
 
+%if_enabled    devel
 %files         -n gem-glib2-devel
 %doc README.md
 %ruby_includedir/*
+%endif
 
+%if_enabled    doc
 %files         -n gem-glib2-doc
 %doc README.md
 %ruby_gemsdocdir/glib2-3.5.1
+%endif
 
 %files         -n gem-vte3
 %doc README.md
@@ -255,12 +275,16 @@ Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files.
 %ruby_gemslibdir/vte3-3.5.1
 %ruby_gemsextdir/vte3-3.5.1
 
+%if_enabled    devel
 %files         -n gem-vte3-devel
 %doc README.md
+%endif
 
+%if_enabled    doc
 %files         -n gem-vte3-doc
 %doc README.md
 %ruby_gemsdocdir/vte3-3.5.1
+%endif
 
 
 %changelog

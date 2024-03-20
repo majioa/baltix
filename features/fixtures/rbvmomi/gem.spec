@@ -1,4 +1,7 @@
 %define        _unpackaged_files_terminate_build 1
+%def_enable    check
+%def_enable    doc
+%def_enable    devel
 %define        gemname rbvmomi
 
 Name:          gem-rbvmomi
@@ -14,7 +17,7 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-%if_with check
+%if_enabled check
 BuildRequires: gem(builder) >= 3.0
 BuildRequires: gem(json) >= 1.8
 BuildRequires: gem(nokogiri) >= 1.5
@@ -76,6 +79,7 @@ used alongside the official documentation.
 Исполнямка для самоцвета rbvmomi.
 
 
+%if_enabled    doc
 %package       -n gem-rbvmomi-doc
 Version:       2.4.1
 Release:       alt1
@@ -96,8 +100,10 @@ used alongside the official documentation.
 
 %description   -n gem-rbvmomi-doc -l ru_RU.UTF-8
 Файлы сведений для самоцвета rbvmomi.
+%endif
 
 
+%if_enabled    devel
 %package       -n gem-rbvmomi-devel
 Version:       2.4.1
 Release:       alt1
@@ -125,6 +131,7 @@ used alongside the official documentation.
 
 %description   -n gem-rbvmomi-devel -l ru_RU.UTF-8
 Файлы для разработки самоцвета rbvmomi.
+%endif
 
 
 %prep
@@ -148,12 +155,16 @@ used alongside the official documentation.
 %doc README.md
 %_bindir/rbvmomish
 
+%if_enabled    doc
 %files         -n gem-rbvmomi-doc
 %doc README.md
 %ruby_gemdocdir
+%endif
 
+%if_enabled    devel
 %files         -n gem-rbvmomi-devel
 %doc README.md
+%endif
 
 
 %changelog

@@ -1,11 +1,18 @@
 <% if has_comment? -%>
 <%= comment -%>
 <% end -%>
-<% if source.is_a?(Baltix::Source::Gem) -%>
 %define        _unpackaged_files_terminate_build 1
-%define        gemname <%= source.name %>
-
+%def_enable    check
+<% if has_any_docs? -%>
+%def_enable    doc
 <% end -%>
+<% if source.is_a?(Baltix::Source::Gem) -%>
+<% if has_devel? -%>
+%def_enable    devel
+<% end -%>
+%define        gemname <%= source.name %>
+<% end -%>
+
 Name:          <%= name %>
 <% if has_epoch? -%>
 Epoch:         <%= epoch %>
@@ -42,7 +49,7 @@ BuildRequires: <%= dep %>
 BuildRequires: <%= dep %>
 <% end -%>
 <% if has_gem_build_requires? || has_gem_build_conflicts? -%>
-%if_with check
+%if_enabled check
 <% gem_build_requires.each do |dep| -%>
 BuildRequires: <%= dep %>
 <% end -%>
@@ -92,6 +99,9 @@ Provides:      <%= dep %>
 <% end -%>
 
 <% valid_secondaries.each do |secondary| -%>
+<% if secondary.is_doc? || secondary.is_devel? -%>
+%if_enabled    <%= secondary.kind %>
+<% end -%>
 %package       -n <%= secondary.name %>
 Version:       <%= secondary.version %>
 Release:       <%= secondary.release %>
@@ -115,12 +125,15 @@ Obsoletes:     <%= dep %>
 <% secondary.provides.each do |dep| -%>
 Provides:      <%= dep %>
 <% end -%>
-
 <% secondary.descriptions.each_pair do |cp, description| -%>
+
 %description   -n <%= secondary.name %><%= Baltix::I18n.is_default?(cp) ? nil : " -l #{cp}" %>
 <%= description %>
-
 <% end -%>
+<% if secondary.is_doc? || secondary.is_devel? -%>
+%endif
+<% end -%>
+
 
 <% end -%>
 %prep
@@ -149,6 +162,9 @@ Provides:      <%= dep %>
 <% end -%>
 
 <% valid_secondaries.each do |secondary| -%>
+<% if secondary.is_doc? || secondary.is_devel? -%>
+%if_enabled    <%= secondary.kind %>
+<% end -%>
 %files         -n <%= secondary.name %>
 <% if secondary.has_readme? -%>
 %doc <%= secondary.readme %>
@@ -176,6 +192,9 @@ Provides:      <%= dep %>
 <% if secondary.has_devel_sources? -%>
 %ruby_includedir/*
 <% end -%>
+<% end -%>
+<% if secondary.is_doc? || secondary.is_devel? -%>
+%endif
 <% end -%>
 
 <% end -%>

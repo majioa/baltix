@@ -370,6 +370,12 @@ class Baltix::Source::Base
       File.dirname(file)
    end
 
+   # document file array, defaulted to blank array
+   #
+   def docs
+      []
+   end
+
    protected
 
    def exedir

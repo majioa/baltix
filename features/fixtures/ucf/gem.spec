@@ -1,4 +1,7 @@
 %define        _unpackaged_files_terminate_build 1
+%def_enable    check
+%def_enable    doc
+%def_enable    devel
 %define        gemname ucf
 
 Name:          gem-ucf
@@ -14,7 +17,7 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-%if_with check
+%if_enabled check
 BuildRequires: gem(bundler) >= 0
 BuildRequires: gem(coveralls) >= 0
 BuildRequires: gem(nokogiri) >= 1.6
@@ -45,6 +48,7 @@ details. UCF is a type of EPUB and very similar to the EPUB Open Container
 Format (OCF).
 
 
+%if_enabled    doc
 %package       -n gem-ucf-doc
 Version:       2.0.2
 Release:       alt1
@@ -65,8 +69,10 @@ Format (OCF).
 
 %description   -n gem-ucf-doc -l ru_RU.UTF-8
 Файлы сведений для самоцвета ucf.
+%endif
 
 
+%if_enabled    devel
 %package       -n gem-ucf-devel
 Version:       2.0.2
 Release:       alt1
@@ -97,6 +103,7 @@ Format (OCF).
 
 %description   -n gem-ucf-devel -l ru_RU.UTF-8
 Файлы для разработки самоцвета ucf.
+%endif
 
 
 %prep
@@ -116,12 +123,16 @@ Format (OCF).
 %ruby_gemspec
 %ruby_gemlibdir
 
+%if_enabled    doc
 %files         -n gem-ucf-doc
 %doc ReadMe.rdoc
 %ruby_gemdocdir
+%endif
 
+%if_enabled    devel
 %files         -n gem-ucf-devel
 %doc ReadMe.rdoc
+%endif
 
 
 %changelog

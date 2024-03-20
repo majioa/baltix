@@ -1,4 +1,7 @@
 %define        _unpackaged_files_terminate_build 1
+%def_enable    check
+%def_enable    doc
+%def_enable    devel
 %define        gemname zip_container
 
 Name:          gem-zip-container
@@ -14,7 +17,7 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-%if_with check
+%if_enabled check
 BuildRequires: gem(bundler) >= 0
 BuildRequires: gem(coveralls) >= 0.8
 BuildRequires: gem(rake) >= 10.1
@@ -47,6 +50,7 @@ https://learn.adobe.com/wiki/display/PDFNAV/Universal+Container+Format for the
 UCF specification.
 
 
+%if_enabled    doc
 %package       -n gem-zip-container-doc
 Version:       4.0.2
 Release:       alt1
@@ -68,8 +72,10 @@ UCF specification.
 
 %description   -n gem-zip-container-doc -l ru_RU.UTF-8
 Файлы сведений для самоцвета zip_container.
+%endif
 
 
+%if_enabled    devel
 %package       -n gem-zip-container-devel
 Version:       4.0.2
 Release:       alt1
@@ -102,6 +108,7 @@ UCF specification.
 
 %description   -n gem-zip-container-devel -l ru_RU.UTF-8
 Файлы для разработки самоцвета zip_container.
+%endif
 
 
 %prep
@@ -121,12 +128,16 @@ UCF specification.
 %ruby_gemspec
 %ruby_gemlibdir
 
+%if_enabled    doc
 %files         -n gem-zip-container-doc
 %doc ReadMe.rdoc
 %ruby_gemdocdir
+%endif
 
+%if_enabled    devel
 %files         -n gem-zip-container-devel
 %doc ReadMe.rdoc
+%endif
 
 
 %changelog

@@ -568,8 +568,9 @@ module Baltix::Spec::Rpm::SpecCore
          obj::STATE.each do |name, opts|
             obj.define_method(name) { self[name] ||= read_attribute(name, opts[:seq]) || of_default(name) }
             #obj.define_method("_#{name}") { of_state[name] }
-            obj.define_method("has_#{name}?") { !read_attribute(name, opts["seq"]).blank? }
-
+            obj.define_method("has_#{name}?") do
+               options["#{name}_dep_setup"] != :skip && !read_attribute(name, opts["seq"]).blank?
+            end
          end
 
          %w(lib exec doc devel app).each do |name|

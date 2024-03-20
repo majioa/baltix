@@ -1,4 +1,7 @@
 %define        _unpackaged_files_terminate_build 1
+%def_enable    check
+%def_enable    doc
+%def_enable    devel
 %define        gemname turn
 
 Name:          gem-turn
@@ -14,7 +17,7 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-%if_with check
+%if_enabled check
 BuildRequires: gem(ansi) >= 0
 BuildRequires: gem(indexer) >= 0
 BuildRequires: gem(mast) >= 0
@@ -57,6 +60,7 @@ informative.
 Исполнямка для самоцвета turn.
 
 
+%if_enabled    doc
 %package       -n gem-turn-doc
 Version:       0.9.7
 Release:       alt1
@@ -76,8 +80,10 @@ informative.
 
 %description   -n gem-turn-doc -l ru_RU.UTF-8
 Файлы сведений для самоцвета turn.
+%endif
 
 
+%if_enabled    devel
 %package       -n gem-turn-devel
 Version:       0.9.7
 Release:       alt1
@@ -100,6 +106,7 @@ informative.
 
 %description   -n gem-turn-devel -l ru_RU.UTF-8
 Файлы для разработки самоцвета turn.
+%endif
 
 
 %prep
@@ -123,12 +130,16 @@ informative.
 %doc README.md
 %_bindir/turn
 
+%if_enabled    doc
 %files         -n gem-turn-doc
 %doc README.md
 %ruby_gemdocdir
+%endif
 
+%if_enabled    devel
 %files         -n gem-turn-devel
 %doc README.md
+%endif
 
 
 %changelog

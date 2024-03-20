@@ -197,6 +197,10 @@ class Baltix::Spec::Rpm
          seq: %w(of_options _docs of_state),
          default: nil,
       },
+      all_docs: {
+         seq: %w(of_options _sub_docs of_state),
+         default: nil,
+      },
       devel: {
          seq: %w(of_options _devel of_state),
          default: nil,
@@ -306,6 +310,12 @@ class Baltix::Spec::Rpm
       #TODO clean variables
 
       space
+   end
+
+   # +has_any_docs?+ returns true if self or child source has any doc
+   #
+   def has_any_docs?
+      all_docs.any?
    end
 
    # +assign_state_sources+ infers all the unassigned state to convert to sources main and secondaries from the state
@@ -436,6 +446,10 @@ class Baltix::Spec::Rpm
      end
    end
 
+   def _sub_docs _in = []
+      (of_source(:docs) || []) | secondaries.map {|s| s.docs }.flatten.compact
+   end
+
    protected
 
    def ruby_build
@@ -552,7 +566,7 @@ class Baltix::Spec::Rpm
 #         end
 #      end
 #
-      #binding.pry
+      # binding.pry
       secondaries =
          names.reduce(secondaries) do |secs, an|
             next secs if secs.find { |sec| sec.name == an }
@@ -577,7 +591,7 @@ class Baltix::Spec::Rpm
             end
          end
 
-      #binding.pry
+      # binding.pry
       secondaries.select do |sec|
          sec.kind != :devel || options.devel_dep_setup != :skip
       end
