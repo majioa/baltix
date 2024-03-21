@@ -35,16 +35,16 @@ Or install it yourself as:
 
 When you are creating a spec for the space from a scratch sample call may be as follows:
 
-    $ sudo /usr/bin/setup.rb -o $(echo $(pwd)|sed "s|.*/||").spec  --maintainer-name="Pavel Skrylev" --maintainer-email="majioa@altlinux.org" -g/home/majioa/available-list.yaml spec --debug-io=- --verbose=debug --ignore-path-tokens=templates,example,examples,sample,samples,spec,test,features,fixtures,doc,docs,contrib,demo,acceptance,conformance,myapp,website,benchmarks,benchmark,gemfiles,misc,steep  2>/dev/null; sudo chown majioa:majioa . -R
+    $ sudo /usr/bin/baltix.rb -o $(echo $(pwd)|sed "s|.*/||").spec  --maintainer-name="Pavel Skrylev" --maintainer-email="majioa@altlinux.org" -g/home/majioa/available-list.yaml spec --debug-io=- --verbose=debug --ignore-path-tokens=templates,example,examples,sample,samples,spec,test,features,fixtures,doc,docs,contrib,demo,acceptance,conformance,myapp,website,benchmarks,benchmark,gemfiles,misc,steep  2>/dev/null; sudo chown majioa:majioa . -R
 
 When you are updating the spec do something like:
 
-    $ sudo /usr/bin/setup.rb -s $(find -name "*.spec~") -o _.spec  --maintainer-name="Pavel Skrylev" --maintainer-email="majioa@altlinux.org" -g/home/majioa/available-list.yaml spec --debug-io=- --verbose=debug --ignore-path-tokens=templates,example,examples,sample,samples,spec,test,features,fixtures,doc,docs,contrib,demo,acceptance,conformance,myapp,website,benchmarks,benchmark,gemfiles,misc,steep  2>/dev/null; sudo chown majioa:majioa . -R
+    $ sudo /usr/bin/baltix.rb -s $(find -name "*.spec~") -o _.spec  --maintainer-name="Pavel Skrylev" --maintainer-email="majioa@altlinux.org" -g/home/majioa/available-list.yaml spec --debug-io=- --verbose=debug --ignore-path-tokens=templates,example,examples,sample,samples,spec,test,features,fixtures,doc,docs,contrib,demo,acceptance,conformance,myapp,website,benchmarks,benchmark,gemfiles,misc,steep  2>/dev/null; sudo chown majioa:majioa . -R
 
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `exe/baltix` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
