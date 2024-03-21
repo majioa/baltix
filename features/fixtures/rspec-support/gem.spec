@@ -69,13 +69,13 @@ and RSpec::Mocks. It is considered suitable for internal use only at this time.
 %ruby_test
 
 %files
-%doc README.md
+%doc Changelog.md LICENSE.md README.md
 %ruby_gemspec
 %ruby_gemlibdir
 
 %if_enabled    doc
 %files         -n gem-rspec-support-doc
-%doc README.md
+%doc Changelog.md LICENSE.md README.md
 %ruby_gemdocdir
 %endif
 

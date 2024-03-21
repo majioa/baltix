@@ -8,3 +8,9 @@
 /tmp/
 
 Gemfile.lock
+
+*.o
+.manifest
+.gem-manifest
+.document
+GIT-VERSION-FILE

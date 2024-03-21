@@ -147,23 +147,23 @@ used alongside the official documentation.
 %ruby_test
 
 %files
-%doc README.md
+%doc LICENSE README.md
 %ruby_gemspec
 %ruby_gemlibdir
 
 %files         -n rbvmomish
-%doc README.md
+%doc LICENSE README.md
 %_bindir/rbvmomish
 
 %if_enabled    doc
 %files         -n gem-rbvmomi-doc
-%doc README.md
+%doc LICENSE README.md
 %ruby_gemdocdir
 %endif
 
 %if_enabled    devel
 %files         -n gem-rbvmomi-devel
-%doc README.md
+%doc LICENSE README.md
 %endif
 
 

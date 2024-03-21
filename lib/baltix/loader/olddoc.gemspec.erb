@@ -1,0 +1,31 @@
+Gem::Specification.new do |spec|
+   spec.name          = <%= name %>
+   spec.version       = <%= version %>
+   spec.authors       = <%= authors%>
+   spec.email         = <%= emails %>
+
+   spec.summary       = <%= summary %>
+   spec.description   = <%= description %>
+   spec.homepage      = <%= homepage_uri %>
+   spec.required_ruby_version = Gem::Requirement.new(">= 1.9.0")
+
+   spec.metadata["allowed_push_host"] = "http://rubygems.org"
+
+   spec.metadata["homepage_uri"] = spec.homepage
+   spec.metadata["source_code_uri"] = <%= source_code_uri %>
+   spec.metadata["changelog_uri"] = <%= changelog_uri %>
+
+   # Specify which files should be added to the gem when it is released.
+   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
+   spec.files         = <%= files %>
+   spec.bindir        = <%= bindir %>
+   spec.executables   = spec.files.grep(%r{^<%= bindir %>/}) { |f| File.basename(f) }
+   spec.require_paths = ["lib"]
+
+   <%- development_dependencies.each do |(name, version, data)| %>
+   spec.add_development_dependency "<%= name %>", "<%= version %>"
+   <%- end %>
+   <%- runtime_dependencies.each do |(name, version, data)| %>
+   spec.add_runtime_dependency "<%= name %>", "<%= version %>"
+   <%- end %>
+end

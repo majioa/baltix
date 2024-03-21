@@ -122,23 +122,23 @@ informative.
 %ruby_test
 
 %files
-%doc README.md
+%doc CONTRIBUTING.md History.txt LICENSE.txt README.md
 %ruby_gemspec
 %ruby_gemlibdir
 
 %files         -n turn
-%doc README.md
+%doc CONTRIBUTING.md History.txt LICENSE.txt README.md
 %_bindir/turn
 
 %if_enabled    doc
 %files         -n gem-turn-doc
-%doc README.md
+%doc CONTRIBUTING.md History.txt LICENSE.txt README.md
 %ruby_gemdocdir
 %endif
 
 %if_enabled    devel
 %files         -n gem-turn-devel
-%doc README.md
+%doc CONTRIBUTING.md History.txt LICENSE.txt README.md
 %endif
 
 

@@ -53,7 +53,7 @@ module Baltix::Log
       def io_name_parse io_names
          io_names.map do |(kind, io_name)|
             io =
-               case io_name
+               case [io_name].flatten.first
                when '-', 'stdout'
                   $stdout
                when '--', 'stderr'

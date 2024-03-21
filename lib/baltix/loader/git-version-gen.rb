@@ -8,27 +8,32 @@ module Baltix::Loader::GitVersionGen
       end
 
       dir = File.dirname(execfile)
-      version_line = IO.read(File.join(dir, "GIT-VERSION-FILE"))
-      if /=(?<version>.*)/ =~ version_line
-         ENV["VERSION"] = version.strip
-      end
-
-      # dot manifest generation
-      files = Dir["*/**/*"].select {|x| File.file?(x) }
-      File.open(".manifest", "w+") {|f| f.puts(files.join("\n"))}
-
-      # make documentaion
-      if File.directory?('Documentation')
-         `make -C Documentation`
-      end
-
-      if !File.exist?('.manifest') || !File.exist?('.gem-manifest')
-         files = Dir.glob("**/*", File::FNM_DOTMATCH).reject do |f|
-            /\/\.git/ =~ f || File.directory?(f)
+      Dir.chdir(dir) do
+         `#{execfile}`
+         version_line = IO.read(File.join(dir, "GIT-VERSION-FILE"))
+         if /=(?<version>.*)/ =~ version_line
+            ENV["VERSION"] = version.strip
          end
 
-         File.open(File.join('.gem-manifest'), "w") { |f| f.puts files }
-         FileUtils.cp('.gem-manifest', '.manifest')
+         # dot manifest generation
+         files = Dir["*/**/*"].select {|x| File.file?(x) }
+         docs = files.select { |x| /(README.*|.*\.rb)/i =~ x }
+         File.open(".manifest", "w+") { |f| f.puts(files.join("\n"))}
+         File.open(".document", "w+") { |f| f.puts(docs.join("\n")) }
+
+         # make documentaion
+         if File.directory?('Documentation')
+            `make -C Documentation`
+         end
+
+         if !File.exist?('.manifest') || !File.exist?('.gem-manifest')
+            files = Dir.glob("**/*", File::FNM_DOTMATCH).reject do |f|
+               /\/\.git/ =~ f || File.directory?(f)
+            end
+
+            File.open(File.join('.gem-manifest'), "w") { |f| f.puts files }
+            FileUtils.cp('.gem-manifest', '.manifest')
+         end
       end
 
       nil

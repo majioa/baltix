@@ -72,7 +72,7 @@ BuildRequires: gem(webrick) >= 0
 
 %add_findreq_skiplist %ruby_gemslibdir/**/*
 %add_findprov_skiplist %ruby_gemslibdir/**/*
-%ruby_ignore_names ruby-gnome2,gdk3-no-gi,(?-mix:-no-gi)
+%ruby_ignore_names rake,ruby-gnome2,gdk3-no-gi,(?-mix:-no-gi)
 
 
 %description
@@ -252,37 +252,37 @@ Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files.
 %endif
 
 %files         -n gem-glib2
-%doc README.md
+%doc COPYING.LIB README.md
 %ruby_gemspecdir/glib2-3.5.1.gemspec
 %ruby_gemslibdir/glib2-3.5.1
 %ruby_gemsextdir/glib2-3.5.1
 
 %if_enabled    devel
 %files         -n gem-glib2-devel
-%doc README.md
+%doc COPYING.LIB README.md
 %ruby_includedir/*
 %endif
 
 %if_enabled    doc
 %files         -n gem-glib2-doc
-%doc README.md
+%doc COPYING.LIB README.md
 %ruby_gemsdocdir/glib2-3.5.1
 %endif
 
 %files         -n gem-vte3
-%doc README.md
+%doc COPYING.LIB README.md
 %ruby_gemspecdir/vte3-3.5.1.gemspec
 %ruby_gemslibdir/vte3-3.5.1
 %ruby_gemsextdir/vte3-3.5.1
 
 %if_enabled    devel
 %files         -n gem-vte3-devel
-%doc README.md
+%doc COPYING.LIB README.md
 %endif
 
 %if_enabled    doc
 %files         -n gem-vte3-doc
-%doc README.md
+%doc COPYING.LIB README.md
 %ruby_gemsdocdir/vte3-3.5.1
 %endif
 

@@ -5,7 +5,10 @@ module Baltix::Spec::Rpm::SpecCore
       /(?<proto>https?:\/\/)?(?<user>[^\.]+).github.io\/(?<page>[^\/]+)/ => ->(m) do
          "https://github.com/#{m["user"]}/#{m["page"]}.git"
       end,
-      /(?<proto>https?:\/\/)?github.com\/(?<user>[^\/]+)\/(?<page>[^\/]+)/ => ->(m) do
+      /(?<proto>https?:\/\/)?bogomips.org\/(?<page>[^\/]+)/ => ->(m) do
+         "https://bogomips.org/#{m["page"]}.git"
+      end,
+      /(?<proto>https?:\/\/)?github.com\/(?<user>[^\/]+)\/(?<page>[^\/\.]+)/ => ->(m) do
          "https://github.com/#{m["user"]}/#{m["page"]}.git"
       end
    }
@@ -43,14 +46,25 @@ module Baltix::Spec::Rpm::SpecCore
    end
 
    def read_attribute name, seq = nil
+      method = :copy
       aa = (seq || self.class::STATE[name][:seq]).reduce(nil) do |value_in, func|
        # binding.pry if name == :context
-         if func[0] == "_"
-            send(func, value_in)
-         elsif value_in.blank?
-            send(func, name)
+         /(?<method>[|>])*(?<mname>.*)/ =~ func
+
+         value =
+         if mname[0] == "_"
+            send(mname, value_in)
          else
-            value_in
+            send(mname, name)
+         end
+
+         case method
+         when "|"
+            [value_in].compact.flatten(1) | [value].compact.flatten(1)
+         when ">"
+            value
+         else #||
+            value_in || value
          end
       end
       # binding.pry if name == :context
@@ -188,7 +202,7 @@ module Baltix::Spec::Rpm::SpecCore
    end
 
    def _files _in
-      source&.spec&.files || []
+      source&.files || []
    rescue
       []
    end
@@ -313,7 +327,7 @@ module Baltix::Spec::Rpm::SpecCore
    end
 
    def _readme _in
-      files.grep(/(readme|чтимя).*/i).group_by {|x| File.basename(x) }.map {|(name, a)| a.first }.join(" ")
+      files.grep(/#{Baltix::Source::Base::DEFAULT_FILES.join("|")}/i).group_by {|x| File.basename(x) }.map {|(name, a)| a.first }.join(" ")
    end
 
    def _requires_plain_only value_in

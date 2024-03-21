@@ -29,11 +29,11 @@ class Baltix::Spec::Rpm
 
    STATE = {
       name: {
-         seq: %w(of_options of_state of_source of_default _name _global_rename),
+         seq: %w(of_options of_state of_source of_default >_name >_global_rename),
          default: "",
       },
       pre_name: {
-         seq: %w(of_options of_state of_default _pre_name),
+         seq: %w(of_options of_state of_default >_pre_name),
          default: "",
       },
       epoch: {
@@ -41,11 +41,11 @@ class Baltix::Spec::Rpm
          default: nil,
       },
       version: {
-         seq: %w(of_options of_source of_state of_default _version),
+         seq: %w(of_options of_source of_state of_default >_version),
          default: ->(this) { this.options.time_stamp || Time.now.strftime("%Y%m%d") },
       },
       release: {
-         seq: %w(of_options of_state _release),
+         seq: %w(of_options of_state >_release),
          default: "alt1",
       },
       build_arch: {
@@ -53,27 +53,27 @@ class Baltix::Spec::Rpm
          default: "noarch",
       },
       summaries: {
-         seq: %w(of_options of_state of_source of_default _summaries),
+         seq: %w(of_options of_state of_source of_default >_summaries),
          default: ""
       },
       group: {
          seq: %w(of_options of_state of_source),
-         default: ->(this) { t("spec.rpm.#{this.kind}.group") },
+         default: ->(this) { Baltix::I18n.t("spec.rpm.#{this.kind}.group") },
       },
       requires: {
-         seq: %w(of_options of_state of_default _filter_out_obsolete _requires_plain_only _requires),
+         seq: %w(of_options of_state of_default >_filter_out_obsolete >_requires_plain_only >_requires),
          default: [],
       },
       conflicts: {
-         seq: %w(of_options of_state of_default _conflicts_plain_only _conflicts),
+         seq: %w(of_options of_state of_default >_conflicts_plain_only >_conflicts),
          default: [],
       },
       provides: {
-         seq: %w(of_options of_state of_default _provides),
+         seq: %w(of_options of_state of_default >_provides),
          default: [],
       },
       obsoletes: {
-         seq: %w(of_options of_state of_default _obsoletes),
+         seq: %w(of_options of_state of_default >_obsoletes),
          default: [],
       },
       file_list: {
@@ -81,7 +81,7 @@ class Baltix::Spec::Rpm
          default: "",
       },
       licenses: {
-         seq: %w(of_options of_state _licenses),
+         seq: %w(of_options of_state >_licenses),
          default: [],
       },
       uri: {
@@ -89,7 +89,7 @@ class Baltix::Spec::Rpm
          default: nil,
       },
       vcs: {
-         seq: %w(of_options of_state of_source _vcs),
+         seq: %w(of_options of_state of_source >_vcs),
          default: nil,
       },
       packager: {
@@ -102,7 +102,7 @@ class Baltix::Spec::Rpm
          end
       },
       source_files: {
-         seq: %w(of_options of_state of_default _source_files),
+         seq: %w(of_options of_state of_default >_source_files),
          default: { "0": "%name-%version.tar" }.to_os,
       },
       patches: {
@@ -110,23 +110,23 @@ class Baltix::Spec::Rpm
          default: {}.to_os,
       },
       build_dependencies: {
-         seq: %w(of_options of_state of_default _build_dependencies _build_dependencies_sort),
+         seq: %w(of_options of_state of_default >_build_dependencies >_build_dependencies_sort),
          default: [],
       },
       build_requires: {
-         seq: %w(of_options of_state of_default _filter_out_build_auto_requires _filter_out_obsolete _build_requires),
+         seq: %w(of_options of_state of_default >_filter_out_build_auto_requires >_filter_out_obsolete >_build_requires),
          default: [],
       },
       build_conflicts: {
-         seq: %w(of_options of_state of_default _build_conflicts),
+         seq: %w(of_options of_state of_default >_build_conflicts),
          default: [],
       },
       build_pre_requires: {
-         seq: %w(of_options of_state of_default _build_pre_requires),
+         seq: %w(of_options of_state of_default >_build_pre_requires),
          default: [ "rpm-build-ruby" ],
       },
       changes: {
-         seq: %w(of_options of_state of_source of_default _changes),
+         seq: %w(of_options of_state of_source of_default >_changes),
          default: ->(this) do
             version = this.version
             description = Baltix::I18n.t("spec.rpm.change.new", binding: binding)
@@ -158,7 +158,7 @@ class Baltix::Spec::Rpm
          default: "%ruby_test",
       },
       secondaries: {
-         seq: %w(of_options of_state of_default _secondaries),
+         seq: %w(of_options of_state of_default >_secondaries),
          default: [],
       },
       context: {
@@ -178,7 +178,7 @@ class Baltix::Spec::Rpm
          default: [],
       },
       descriptions: {
-         seq: %w(of_options of_state of_source of_default _proceed_description _descriptions _format_descriptions),
+         seq: %w(of_options of_state of_source of_default >_proceed_description >_descriptions >_format_descriptions),
          default: {}.to_os
       },
       valid_sources: {
@@ -186,7 +186,7 @@ class Baltix::Spec::Rpm
          default: []
       },
       readme: {
-         seq: %w(of_options of_source _readme of_state),
+         seq: %w(of_options of_source >_readme of_state),
          default: nil,
       },
       executables: {
@@ -194,31 +194,35 @@ class Baltix::Spec::Rpm
          default: [],
       },
       docs: {
-         seq: %w(of_options _docs of_state),
+         seq: %w(of_options >_docs of_state),
          default: nil,
       },
       all_docs: {
-         seq: %w(of_options _sub_docs of_state),
+         seq: %w(of_options >_sub_docs of_state),
          default: nil,
       },
       devel: {
-         seq: %w(of_options _devel of_state),
+         seq: %w(of_options >_devel of_state),
          default: nil,
       },
       devel_requires: {
-         seq: %w(of_options of_state _devel_requires),
+         seq: %w(of_options of_state >_devel_requires),
          default: nil,
       },
       devel_conflicts: {
-         seq: %w(of_options of_state _devel_conflicts),
+         seq: %w(of_options of_state >_devel_conflicts),
          default: nil,
       },
       devel_sources: {
-         seq: %w(of_options _devel_sources of_state),
+         seq: %w(of_options >_devel_sources of_state),
          default: [],
       },
       files: {
-         seq: %w(of_options _files of_state),
+         seq: %w(of_options >_files of_state),
+         default: []
+      },
+      allfiles: {
+         seq: %w(of_options of_source of_state),
          default: []
       },
       dependencies: {
@@ -230,35 +234,35 @@ class Baltix::Spec::Rpm
          default: []
       },
       ruby_alias_names: {
-         seq: %w(of_options of_state _ruby_alias_names _ruby_alias_names_local),
+         seq: %w(of_options of_state >_ruby_alias_names >_ruby_alias_names_local),
          default: []
       },
       gem_versionings: {
-         seq: %w(of_options of_state _gem_versionings_with_use),
+         seq: %w(of_options of_state >_gem_versionings_with_use),
          default: []
       },
       ignored_names: {
-         seq: %w(of_options of_state),
+         seq: %w(of_options |of_state),
          default: []
       },
       aliased_names: {
-         seq: %w(of_options of_state),
+         seq: %w(of_options |of_state),
          default: []
       },
       available_gem_list: {
-         seq: %w(of_options of_state _available_gem_list),
+         seq: %w(of_options of_state >_available_gem_list),
          default: {}
       },
       versioned_gem_list: {
-         seq: %w(of_options of_state _versioned_gem_list),
+         seq: %w(of_options of_state >_versioned_gem_list),
          default: {}
       },
       available_gem_ranges: {
-         seq: %w(of_options of_state _available_gem_ranges),
+         seq: %w(of_options of_state >_available_gem_ranges),
          default: {}.to_os
       },
       use_gem_version_list: {
-         seq: %w(of_options of_state _use_gem_version_list),
+         seq: %w(of_options of_state >_use_gem_version_list),
          default: {}.to_os
       },
       use_gem_obsolete_list: {
@@ -270,7 +274,7 @@ class Baltix::Spec::Rpm
          default: nil
       },
       rake_build_tasks: {
-         seq: %w(of_options of_source of_state of_default _rake_build_tasks),
+         seq: %w(of_options of_source of_state of_default >_rake_build_tasks),
          default: ""
       }
    }.to_os(hash: true)
@@ -651,11 +655,11 @@ class Baltix::Spec::Rpm
 
    def _vcs value_in
       pre = URL_MATCHER.reduce(value_in) do |res, (rule, e)|
-         res || uri && (match = uri.match(rule)) && e[match] || nil
+         vcs = res || uri
+         vcs && (match = vcs.match(rule)) && e[match] || res
       end
-      vcs = /github.com/ =~ pre.to_s && pre.gsub(/http:/, "https:") || pre
 
-      vcs && "#{vcs}#{/\.git/ !~ vcs && ".git" || ""}".downcase || nil
+      pre && "#{pre}#{/\.git/ !~ pre && ".git" || ""}".downcase || nil
    end
 
    def _source_files value_in
@@ -721,11 +725,11 @@ class Baltix::Spec::Rpm
                # TODO move to i18n and settings file
                previous_version = of_state(:version)
                version = self.version
-               description = t("spec.rpm.change.upgrade", binding: binding)
+               description = Baltix::I18n.t("spec.rpm.change.upgrade", binding: binding)
                release = "alt1"
             elsif state_changed?
                version = self.version
-               description = t("spec.rpm.change.fix", binding: binding)
+               description = Baltix::I18n.t("spec.rpm.change.fix", binding: binding)
                release_version_bump =
                # TODO suffix
                /alt(?<release_version>.*)/ =~ of_state(:release)

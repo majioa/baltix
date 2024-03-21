@@ -1346,8 +1346,8 @@ Feature: Spec actor
                   extensions: []
                   extra_rdoc_files: []
                   files:
-                   - CHANGELOG.md
-                   - MIT-LICENSE
+                   - CHANGELO1G.md
+                   - MIT-LI1CENSE
                    - exe/foo
                    - lib/foo.rb
                   homepage: http://fooboo.org
@@ -1527,7 +1527,7 @@ Feature: Spec actor
          License:       MIT or GPLv2
          Group:         Development/Ruby
          Url:           http://fooboo.org
-         Vcs:           https://github.com/foo/fooboo/tree/v5.2.4.4/fooboo.git
+         Vcs:           https://github.com/foo/fooboo.git
          Packager:      Spec Author <author@example.org>
          BuildArch:     noarch
 
@@ -1793,7 +1793,7 @@ Feature: Spec actor
          License:       MIT or GPLv2
          Group:         Development/Ruby
          Url:           http://fooboo.org
-         Vcs:           https://github.com/foo/fooboo/tree/v5.2.4.4/fooboo.git
+         Vcs:           https://github.com/foo/fooboo.git
          Packager:      Spec Author <author@example.org>
 
          Source:        %name-%version.tar
@@ -1864,23 +1864,23 @@ Feature: Spec actor
          %ruby_test
 
          %files
-         %doc readme.md
+         %doc CHANGELOG.md MIT-LICENSE readme.md
          %ruby_gemspec
          %ruby_gemlibdir
          %ruby_gemextdir
 
          %files         -n foo-ba
-         %doc readme.md
+         %doc CHANGELOG.md MIT-LICENSE readme.md
          %_bindir/foo.barke
          %_bindir/foo_bazeeq
          %_bindir/foo-barzerq
 
          %files         -n gem-foo-boo-doc
-         %doc readme.md
+         %doc CHANGELOG.md MIT-LICENSE readme.md
          %ruby_gemdocdir
 
          %files         -n gem-foo-boo-devel
-         %doc readme.md
+         %doc CHANGELOG.md MIT-LICENSE readme.md
 
 
          %changelog
@@ -2210,7 +2210,7 @@ Feature: Spec actor
          License:       MIT or GPLv2
          Group:         Development/Ruby
          Url:           http://fooboo.org
-         Vcs:           https://github.com/foo/fooboo/tree/v5.2.4.4/fooboo.git
+         Vcs:           https://github.com/foo/fooboo.git
          Packager:      Spec Author <author@example.org>
          BuildArch:     noarch
 
@@ -2355,38 +2355,38 @@ Feature: Spec actor
          %ruby_test
 
          %files
-         %doc readme.md
+         %doc CHANGELOG.md MIT-LICENSE readme.md
          %ruby_gemspec
          %ruby_gemlibdir
 
          %files         -n gem-foo-boo-ext
-         %doc README.md
+         %doc CHANGELOG.md LICENSE.txt README.md
          %ruby_gemspecdir/foo_boo_ext-1.1.7.gemspec
          %ruby_gemslibdir/foo_boo_ext-1.1.7
          %ruby_gemsextdir/foo_boo_ext-1.1.7
 
          %files         -n foo-boo-ext
-         %doc README.md
+         %doc CHANGELOG.md LICENSE.txt README.md
          %_bindir/foo_boo_ext
 
          %files         -n gem-foo-boo-ext-doc
-         %doc README.md
+         %doc CHANGELOG.md LICENSE.txt README.md
          %ruby_gemsdocdir/foo_boo_ext-1.1.7
 
          %files         -n gem-foo-boo-ext-devel
-         %doc README.md
+         %doc CHANGELOG.md LICENSE.txt README.md
          %ruby_includedir/*
 
          %files         -n foo
-         %doc readme.md
+         %doc CHANGELOG.md MIT-LICENSE readme.md
          %_bindir/foo
 
          %files         -n gem-foo-boo-doc
-         %doc readme.md
+         %doc CHANGELOG.md MIT-LICENSE readme.md
          %ruby_gemdocdir
 
          %files         -n gem-foo-boo-devel
-         %doc readme.md
+         %doc CHANGELOG.md MIT-LICENSE readme.md
 
 
          %changelog
@@ -2744,7 +2744,7 @@ Feature: Spec actor
          License:       MIT or GPLv2
          Group:         Group
          Url:           https://path/to/soft/rpm
-         Vcs:           https://github.com/foo/fooboo/tree/v5.2.4.4/fooboo.git
+         Vcs:           https://github.com/foo/fooboo.git
          Packager:      Spec Author <author@example.org>
 
          Source:        %name-%version.tar
@@ -2819,14 +2819,17 @@ Feature: Spec actor
          %ruby_test
 
          %files
+         %doc CHANGELOG.md MIT-LICENSE
          %ruby_gemspec
          %ruby_gemlibdir
          %ruby_gemextdir
 
          %files         -n gem-foo-boo-doc
+         %doc CHANGELOG.md MIT-LICENSE
          %ruby_gemdocdir
 
          %files         -n gem-foo-boo-devel
+         %doc CHANGELOG.md MIT-LICENSE
          %ruby_includedir/*
 
 

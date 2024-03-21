@@ -279,7 +279,8 @@ class Baltix::Space
    # init log
    def baltix_log
       ios = DEFAULT_IO_NAMES.merge(%i(error warn info debug).map {|k| [k, options["#{k}_io"]]}.to_h)
-      Baltix::Log.setup(options.log_level.to_sym, ios)
+
+      Baltix::Log.setup([options.log_level].flatten.first.to_sym, ios)
    end
 
    def show_tree

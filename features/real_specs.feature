@@ -13,7 +13,7 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "ucf" fixture spec for the baltix setup
 
-   @policy1_0 @gem_change
+   @policy1_0 @gem_change @gem_obsolete_list
    Scenario: Apply the Spec actor to setup for zip-container gem and old Ruby Policy 1.0 setup
       Given blank space
       And a spec from fixture "zip-container"
@@ -27,6 +27,21 @@ Feature: Spec actor
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
       Then he acquires an "zip-container" fixture spec for the baltix setup
+
+   @policy1_0 @gem_change @olddoc @wrongdoc
+   Scenario: Apply the Spec actor to setup for kgio gem with Olddoc/Wrongdoc specification
+         and old Ruby Policy 1.0 setup
+      Given blank space
+      And a spec from fixture "kgio"
+      When developer locks the time to "21.04.2021"
+      And he sets the space options as:
+         | options               | value                                         |
+         | rootdir               | features/fixtures/kgio                        |
+         | maintainer_name       | Pavel Skrylev                                 |
+         | maintainer_email      | majioa@altlinux.org                           |
+      And he loads the spec into the space
+      And he applies "spec" actor to the baltix setup
+      Then he acquires an "kgio" fixture spec for the baltix setup
 
    @policy2_0 @gem_change
    Scenario: Apply the Spec actor to setup for rbvmomi gem and manual Ruby Policy 2.0 setup
@@ -105,6 +120,7 @@ Feature: Spec actor
          | rootdir               | features/fixtures/ruby-gnome2     |
          | available_gem_list    | {minitest: 5.14.0}                |
          | spec_type             | rpm                               |
+         | ignored_names         | [rake]                            |
          | maintainer_name       | Pavel Skrylev                     |
          | maintainer_email      | majioa@altlinux.org               |
       And he loads the spec into the space

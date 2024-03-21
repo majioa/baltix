@@ -5,6 +5,7 @@ class Baltix::Source::Base
    extend ::Baltix::Log
 
    OPTION_KEYS = %i(source_file source_names replace_list aliases alias_names)
+   DEFAULT_FILES = %i(readme contrib history changelog license copying)
 
    DL_DIRS     = ->(s) { ".so.#{s.name}#{RbConfig::CONFIG['sitearchdir']}" }
    RI_DIRS     = ->(s) { [ s.default_ridir, 'ri' ] }
@@ -181,6 +182,12 @@ class Baltix::Source::Base
 
    def rootdir
       @rootdir ||= detect_root
+   end
+
+   def default_files
+      Dir.chdir(File.join(rootdir)) { Dir.glob('*') }.select { |f| /#{DEFAULT_FILES.join("|")}/i =~ f }
+   rescue Errno::ENOENT
+      []
    end
 
    def source_names

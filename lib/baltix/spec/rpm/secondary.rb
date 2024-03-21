@@ -3,11 +3,11 @@ class Baltix::Spec::Rpm::Secondary
 
    STATE = {
       name: {
-         seq: %w(of_options of_source of_state of_default _name _local_rename),
+         seq: %w(of_options of_source of_state of_default >_name >_local_rename),
          default: "",
       },
       pre_name: {
-         seq: %w(of_options of_state of_default _pre_name),
+         seq: %w(of_options of_state of_default >_pre_name),
          default: "",
       },
       epoch: {
@@ -15,11 +15,11 @@ class Baltix::Spec::Rpm::Secondary
          default: nil,
       },
       version: {
-         seq: %w(of_options of_source of_state of_default _version),
+         seq: %w(of_options of_source of_state of_default >_version),
          default: ->(_) { Time.now.strftime("%Y%m%d") },
       },
       release: {
-         seq: %w(of_options of_state _release),
+         seq: %w(of_options of_state >_release),
          default: "alt1",
       },
       build_arch: {
@@ -27,27 +27,27 @@ class Baltix::Spec::Rpm::Secondary
          default: "noarch",
       },
       summaries: {
-         seq: %w(of_options of_state of_source of_default _summaries),
+         seq: %w(of_options of_state of_source of_default >_summaries),
          default: ""
       },
       group: {
-         seq: %w(of_options _group),
+         seq: %w(of_options >_group),
          default: ->(this) { Baltix::I18n.t("spec.rpm.#{this.kind}.group") },
       },
       requires: {
-         seq: %w(of_options of_state of_default _requires_plain_only _requires),
+         seq: %w(of_options of_state of_default >_requires_plain_only >_requires),
          default: [],
       },
       conflicts: {
-         seq: %w(of_options of_state of_default _conflicts_plain_only _conflicts),
+         seq: %w(of_options of_state of_default >_conflicts_plain_only >_conflicts),
          default: [],
       },
       provides: {
-         seq: %w(of_options of_state of_default _provides),
+         seq: %w(of_options of_state of_default >_provides),
          default: [],
       },
       obsoletes: {
-         seq: %w(of_options of_state of_default _obsoletes),
+         seq: %w(of_options of_state of_default >_obsoletes),
          default: [],
       },
       file_list: {
@@ -59,11 +59,11 @@ class Baltix::Spec::Rpm::Secondary
          default: [],
       },
       descriptions: {
-         seq: %w(of_options of_state of_source of_default _proceed_description _descriptions _format_descriptions),
+         seq: %w(of_options of_state of_source of_default >_proceed_description >_descriptions >_format_descriptions),
          default: {}
       },
       readme: {
-         seq: %w(of_options of_source _readme of_state),
+         seq: %w(of_options of_source >_readme of_state),
          default: nil,
       },
       executables: {
@@ -71,27 +71,31 @@ class Baltix::Spec::Rpm::Secondary
          default: [],
       },
       docs: {
-         seq: %w(of_options _docs of_state),
+         seq: %w(of_options >_docs of_state),
          default: nil,
       },
       devel: {
-         seq: %w(of_options _devel of_state),
+         seq: %w(of_options >_devel of_state),
          default: nil,
       },
       devel_requires: {
-         seq: %w(of_options of_state _devel_requires),
+         seq: %w(of_options of_state >_devel_requires),
          default: nil,
       },
       devel_conflicts: {
-         seq: %w(of_options of_state _devel_conflicts),
+         seq: %w(of_options of_state >_devel_conflicts),
          default: nil,
       },
       devel_sources: {
-         seq: %w(of_options _devel_sources of_state),
+         seq: %w(of_options >_devel_sources of_state),
          default: [],
       },
       files: {
-         seq: %w(of_options _files of_state),
+         seq: %w(of_options >_files of_state),
+         default: []
+      },
+      allfiles: {
+         seq: %w(of_options of_source of_state),
          default: []
       },
       context: {
@@ -103,15 +107,15 @@ class Baltix::Spec::Rpm::Secondary
          default: []
       },
       gem_versionings: {
-         seq: %w(of_options of_state _gem_versionings),
+         seq: %w(of_options of_state >_gem_versionings),
          default: []
       },
       available_gem_list: {
-         seq: %w(of_options of_state _available_gem_list),
+         seq: %w(of_options of_state >_available_gem_list),
          default: {}
       },
       available_gem_ranges: {
-         seq: %w(of_options of_state _available_gem_ranges),
+         seq: %w(of_options of_state >_available_gem_ranges),
          default: {}
       },
       use_gem_obsolete_list: {

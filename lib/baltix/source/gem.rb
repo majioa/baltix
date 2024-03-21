@@ -41,7 +41,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
 
    LOADERS = {
       /\/pom.xml$/ => :pom,
-      /\/(cmake|CMakeLists.txt)$/ => :cmake,
+      /\/(CMakeLists.txt)$/ => :cmake,
       /\/Rookbook.props$/ => :rookbook,
       /\/GIT-VERSION-GEN$/ => :git_version_gen,
       /\/(MANIFEST|Manifest.txt)$/ => :manifest,
@@ -199,14 +199,14 @@ class Baltix::Source::Gem < Baltix::Source::Base
    # tree
    def datatree
       # TODO deep_merge
-      @datatree ||= super { { '.' => spec.files } }
+      @datatree ||= super { { '.' => spec.files | default_files } }
    end
 
    def allfiles
       @allfiles = (
          spec.require_paths.map {|x| File.absolute_path?(x) && x || File.join(x, '**', '*') }.map {|x| Dir[x] }.flatten |
          spec.executables.map {|x| Dir[File.join(spec.bindir, x)] }.flatten |
-         spec.files
+         spec.files | default_files
       )
    end
 
@@ -271,6 +271,10 @@ class Baltix::Source::Gem < Baltix::Source::Base
 
    def compilables
       extfiles | spec.extensions
+   end
+
+   def files kind = nil, &block
+      kind ? super : spec.files | default_files
    end
 
    def to_h
