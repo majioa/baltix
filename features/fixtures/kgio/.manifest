@@ -19,4 +19,3 @@ ext/kgio/wait.c
 ext/kgio/write.c
 ext/kgio/writev.c
 lib/kgio.rb
-lib/kgio.rb~
