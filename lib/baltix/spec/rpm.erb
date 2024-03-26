@@ -24,7 +24,9 @@ Summary<%= Baltix::I18n.is_default?(cp) ? nil : "(#{cp})" %>:<%= " " * (Baltix::
 <% end -%>
 License:       <%= licenses.join(" or ") %>
 Group:         <%= group %>
+<% if has_uri? -%>
 Url:           <%= uri %>
+<% end -%>
 <% if has_vcs? -%>
 Vcs:           <%= vcs %>
 <% end -%>

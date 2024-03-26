@@ -327,7 +327,11 @@ module Baltix::Spec::Rpm::SpecCore
    end
 
    def _readme _in
-      files.grep(/#{Baltix::Source::Base::DEFAULT_FILES.join("|")}/i).group_by {|x| File.basename(x) }.map {|(name, a)| a.first }.join(" ")
+      files.grep(/^[^\/]*(#{Baltix::Source::Base::DEFAULT_FILES.join("|")})/i).group_by do |x|
+         File.basename(x)
+      end.map do |(name, a)|
+         a.first
+      end.join(" ")
    end
 
    def _requires_plain_only value_in

@@ -172,3 +172,17 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "polyglot" fixture spec for the baltix setup
 
+   @scratch @echoe
+   Scenario: Apply the Spec actor to setup for echoe gem to blank setup
+      Given blank space
+      When developer locks the time to "21.04.2021"
+      And he sets the space options as:
+         | options               | value                             |
+         | packager.name         | Ruby Maintainers Team             |
+         | packager.email        | ruby@packages.altlinux.org        |
+         | rootdir               | features/fixtures/echoe           |
+         | spec_type             | rpm                               |
+         | maintainer_name       | Pavel Skrylev                     |
+         | maintainer_email      | majioa@altlinux.org               |
+      And he applies "spec" actor to the baltix setup
+      Then he acquires an "echoe" fixture spec for the baltix setup

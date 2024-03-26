@@ -25,6 +25,7 @@ end
 
 {
   :Hoe => "hoe",
+  :Echoe => "echoe",
   :Olddoc => "olddoc",
   :Wrongdoc => "olddoc",
   :Bones => "bones",

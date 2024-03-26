@@ -5,7 +5,7 @@ class Baltix::Source::Base
    extend ::Baltix::Log
 
    OPTION_KEYS = %i(source_file source_names replace_list aliases alias_names)
-   DEFAULT_FILES = %i(readme contrib history changelog license copying)
+   DEFAULT_FILES = %i(readme contrib history changelog license copying code_of_conduct)
 
    DL_DIRS     = ->(s) { ".so.#{s.name}#{RbConfig::CONFIG['sitearchdir']}" }
    RI_DIRS     = ->(s) { [ s.default_ridir, 'ri' ] }
