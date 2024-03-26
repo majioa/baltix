@@ -14,9 +14,17 @@ module Baltix::Loader
 
       alias_method :require_orig, :require
 
-      def require *args
-         require_orig(*args)
+      def require path, *args
+         require_orig(path, *args)
       rescue LoadError
+         unless File.absolute_path?(path)
+            begin
+               # try loading extension
+               require_relative('extensions/' + path)
+            rescue LoadError
+            end
+         end
+
          true
       end
 

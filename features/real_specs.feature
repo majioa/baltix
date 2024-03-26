@@ -142,3 +142,18 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "oedipus-lex" fixture spec for the baltix setup
 
+   @scratch @bones
+   Scenario: Apply the Spec actor to setup for little-plugger gem to blank setup
+      Given blank space
+      When developer locks the time to "21.04.2021"
+      And he sets the space options as:
+         | options               | value                             |
+         | packager.name         | Ruby Maintainers Team             |
+         | packager.email        | ruby@packages.altlinux.org        |
+         | rootdir               | features/fixtures/little-plugger  |
+         | spec_type             | rpm                               |
+         | maintainer_name       | Pavel Skrylev                     |
+         | maintainer_email      | majioa@altlinux.org               |
+      And he applies "spec" actor to the baltix setup
+      Then he acquires an "little-plugger" fixture spec for the baltix setup
+

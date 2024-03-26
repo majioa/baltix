@@ -16,14 +16,20 @@ module Baltix
    ::OpenStruct.include(Extensions::OpenStruct)
    ::Hash.include(Extensions::Hash)
    ::Gem::Requirement.include(Extensions::GemRequirement)
+
+   def self.main
+      @main ||= TOPLEVEL_BINDING.eval('self')
+
+   end
 end
 
 {
   :Hoe => "hoe",
   :Olddoc => "olddoc",
   :Wrongdoc => "olddoc",
+  :Bones => "bones",
 }.each do |mod, req|
    unless (mod.constantize rescue nil)
-      autoload(mod, File.dirname(__FILE__) + "/baltix/extensions/#{req}")
+      Kernel.autoload(mod, File.dirname(__FILE__) + "/baltix/extensions/#{req}")
    end
 end

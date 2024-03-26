@@ -6,11 +6,6 @@ lost runtime deps
 - add return to common space on load (for ruby-rails)
 - add doc compilation only over included lib files
 - validate provides/requires detection speed on gem-google-api-client , azure-sdk
-
-
-- spec
-  bones - loquacious/bones
-
 - validate spec for gem rdoc (rdoc/ri) - muliple executables
 
 + generate spec for:
