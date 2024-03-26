@@ -28,6 +28,7 @@ end
   :Olddoc => "olddoc",
   :Wrongdoc => "olddoc",
   :Bones => "bones",
+  :Jeweler => "jeweler",
 }.each do |mod, req|
    unless (mod.constantize rescue nil)
       Kernel.autoload(mod, File.dirname(__FILE__) + "/baltix/extensions/#{req}")
