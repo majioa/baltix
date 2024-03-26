@@ -17,3 +17,13 @@ module Baltix
    ::Hash.include(Extensions::Hash)
    ::Gem::Requirement.include(Extensions::GemRequirement)
 end
+
+{
+  :Hoe => "hoe",
+  :Olddoc => "olddoc",
+  :Wrongdoc => "olddoc",
+}.each do |mod, req|
+   unless (mod.constantize rescue nil)
+      autoload(mod, File.dirname(__FILE__) + "/baltix/extensions/#{req}")
+   end
+end

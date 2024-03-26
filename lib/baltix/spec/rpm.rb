@@ -101,6 +101,15 @@ class Baltix::Spec::Rpm
             )
          end
       },
+      maintainer: {
+         seq: %w(of_options of_state),
+         default: ->(this) do
+            OpenStruct.new(
+               name: this.options.maintainer_name || "Spec Author",
+               email: this.options.maintainer_email || "author@example.org"
+            )
+         end
+      },
       source_files: {
          seq: %w(of_options of_state of_default >_source_files),
          default: { "0": "%name-%version.tar" }.to_os,
@@ -134,8 +143,8 @@ class Baltix::Spec::Rpm
 
             [ OpenStruct.new(
                date: Date.today.strftime("%a %b %d %Y"),
-               author: this.packager.name,
-               email: this.packager.email,
+               author: this.maintainer.name,
+               email: this.maintainer.email,
                version: version,
                release: release,
                description: description) ]
@@ -520,7 +529,7 @@ class Baltix::Spec::Rpm
 
       names =
          if source.kind_of?(Baltix::Source::Gem)
-            [ source&.name, name&.name ]
+            [ source&.name, name&.name, name&.aliases ].flatten
          else
             [ source&.name, name&.fullname ]
          end.compact.uniq

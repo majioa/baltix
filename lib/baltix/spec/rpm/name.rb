@@ -121,7 +121,7 @@ class Baltix::Spec::Rpm::Name
       def parse name_in, options_in = {}
          m, kind =
             if name_in.is_a?(self)
-               [name_in.original_fullname.match(RULE), name_in.kind]
+               [name_in.name.match(RULE), name_in.kind]
             else
                [name_in.match(RULE)]
             end
@@ -147,7 +147,7 @@ class Baltix::Spec::Rpm::Name
          })
 
          options[:name] = options[:name].blank? && options[:aliases].first || options[:name]
-         #binding.pry if name_in =~ /ruby/
+         #binding.pry if name_in =~ /oed/
 
          new(options)
       end

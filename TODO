@@ -9,7 +9,6 @@ lost runtime deps
 
 
 - spec
-  hoe - hoe/racc
   bones - loquacious/bones
 
 - validate spec for gem rdoc (rdoc/ri) - muliple executables

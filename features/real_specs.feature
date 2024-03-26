@@ -93,7 +93,7 @@ Feature: Spec actor
       Then he acquires an "parser" fixture spec for the baltix setup
 
    @scratch @index_gemspec
-   Scenario: Apply the Spec actor to setup for ucf gem and old Ruby Policy 1.0 setup
+   Scenario: Apply the Spec actor to setup for turn gem to blank setup
       Given blank space
       When developer locks the time to "21.04.2021"
       And he sets the space options as:
@@ -126,4 +126,19 @@ Feature: Spec actor
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
       Then he acquires an "ruby-gnome2" fixture spec for the baltix setup
+
+   @scratch @hoe
+   Scenario: Apply the Spec actor to setup for oedipus-lex gem to blank setup
+      Given blank space
+      When developer locks the time to "21.04.2021"
+      And he sets the space options as:
+         | options               | value                             |
+         | packager.name         | Ruby Maintainers Team             |
+         | packager.email        | ruby@packages.altlinux.org        |
+         | rootdir               | features/fixtures/oedipus-lex     |
+         | spec_type             | rpm                               |
+         | maintainer_name       | Pavel Skrylev                     |
+         | maintainer_email      | majioa@altlinux.org               |
+      And he applies "spec" actor to the baltix setup
+      Then he acquires an "oedipus-lex" fixture spec for the baltix setup
 
