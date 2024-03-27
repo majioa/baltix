@@ -497,16 +497,16 @@ module Baltix::Spec::Rpm::SpecCore
    end
 
    def _available_gem_list value_in
-      value_in || options.available_gem_list || of_default(:available_gem_list)
+      value_in || options.available_gem_list
    end
 
    def _available_gem_ranges value_in
-      available_gem_list.reduce({}.to_os) do |res, (name, version_in)|
+      available_gem_list.reduce({}.to_os) do |res, name, version_in|
          low = [ version_in ].flatten.map {|v| Gem::Version.new(v) }.min
          bottom = [ version_in ].flatten.map {|v| Gem::Version.new(v.split(".")[0..1].join(".")).bump }.max
          reqs = [ ">= #{low}", "< #{bottom}" ]
 
-         res[name] = Gem::Dependency.new(name, Gem::Requirement.new(reqs))
+         res[name] = Gem::Dependency.new(name.to_s, Gem::Requirement.new(reqs))
 
          res
       end
@@ -522,7 +522,7 @@ module Baltix::Spec::Rpm::SpecCore
       first = first_in || {}.to_os
       second = second_in || {}.to_os
       a=
-      first.reduce(second) do |r, name, req|
+      first.reduce(second.dup) do |r, name, req|
          if r[name]
             r[name] = r[name].merge(req)
 

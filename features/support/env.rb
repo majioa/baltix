@@ -16,6 +16,12 @@ Shoulda::Matchers.configure do |config|
    end
 end
 
+RSpec::Matchers.define :match_record_yaml do |yaml|
+   match do |record|
+      deep_match(record, YAML.load(yaml))
+   end
+end
+
 After do
    instance_variables.reject do |name|
       name.to_s =~ /__/

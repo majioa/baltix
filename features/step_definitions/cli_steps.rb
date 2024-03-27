@@ -70,11 +70,11 @@ Then('property {string} of space is of kind {string}') do |property, kind|
 end
 
 Then('space\'s options {string} is:') do |option, text|
-   expect(space.options[option]).to eql(YAML.load(text))
+   expect(space.options[option]).to match_record_yaml(text)
 end
 
 Then('property {string} of options is:') do |property, text|
-   expect(space.options.send(property)).to eql(YAML.load(text))
+   expect(space.options.send(property)).to match_record_yaml(text)
 end
 
 Then('space\'s property {string} is not blank') do |property|

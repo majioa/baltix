@@ -20,5 +20,5 @@ When('developer locks the time to {string}') do |time|
 end
 
 When(/(?:he|developer) sets the space option "([^"]+)" to:/) do |option, text|
-   space.options[option] = YAML.load(text)
+   space.options[option] = Baltix.load(text)
 end

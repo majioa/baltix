@@ -22,7 +22,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
 
    TYPE = 'Gem::Specification'
    BIN_IGNORES = %w(test)
-   OPTION_KEYS = %i(source_file source_names gemspec spec version replace_list aliases alias_names)
+   OPTION_KEYS = %i(source_file source_names gemspec spec version replace_list aliases alias_names loader)
 
    EXE_DIRS = ->(s) { s.spec.bindir || s.exedir || nil }
    EXT_DIRS = ->(s) do

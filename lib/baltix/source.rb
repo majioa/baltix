@@ -15,7 +15,7 @@ module ::Baltix::Source
          sources_pre =
             TYPES.map do |(name, const)|
                kls = self.const_get(const)
-               kls.respond_to?(:search) && kls.search(dir, options) || []
+               kls.respond_to?(:search) && kls.search(dir, options.dup) || []
             end.flatten | [ self::Fake.new({ source_file: File.join(dir, '.fake') }.to_os) ]
 
          sources_pre.group_by do |source|

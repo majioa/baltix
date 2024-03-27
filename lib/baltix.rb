@@ -14,12 +14,39 @@ module Baltix
    ::Kernel.extend(Extensions::Kernel)
    ::Object.include(Extensions::Object)
    ::OpenStruct.include(Extensions::OpenStruct)
-   ::Hash.include(Extensions::Hash)
+   ::String.include(Extensions::String)
    ::Gem::Requirement.include(Extensions::GemRequirement)
 
-   def self.main
-      @main ||= TOPLEVEL_BINDING.eval('self')
+   class << self
+      def main
+         @main ||= TOPLEVEL_BINDING.eval('self')
+      end
 
+      def load string
+         if Gem::Version.new(Psych::VERSION) >= Gem::Version.new("4.0.0")
+            YAML.load(string,
+               aliases: true,
+               permitted_classes: [
+                  Baltix::Source::Fake,
+                  Baltix::Source::Rakefile,
+                  Baltix::Source::Gemfile,
+                  Baltix::Source::Gem,
+                  Baltix::Spec::Rpm,
+                  Baltix::Spec::Rpm::Name,
+                  Baltix::Spec::Rpm::Secondary,
+                  Gem::Specification,
+                  Gem::Version,
+                  Gem::Dependency,
+                  Gem::Requirement,
+                  OpenStruct,
+                  Symbol,
+                  Time,
+                  Date
+               ])
+         else
+            YAML.load(string)
+         end
+      end
    end
 end
 

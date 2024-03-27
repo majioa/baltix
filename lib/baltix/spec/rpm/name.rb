@@ -92,7 +92,7 @@ class Baltix::Spec::Rpm::Name
    end
 
    def autoprefix
-      %w(exec app).include?(kind) || %w(app).include?(support_name&.kind) ? nil : self.class.default_prefix
+      %w(exec app fake).include?(kind) || %w(app).include?(support_name&.kind) ? nil : self.class.default_prefix
    end
 
    def autoname

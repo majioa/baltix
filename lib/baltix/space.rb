@@ -218,7 +218,7 @@ class Baltix::Space
    end
 
    def read_attribute attr
-      options.send(attr) || state.send(attr)
+      options.send(attr) || state.respond_to?(attr) && state.send(attr)
    end
 
    def options_for type
@@ -257,7 +257,7 @@ class Baltix::Space
          if spec_pre.is_a?(Baltix::Spec::Rpm)
             spec_pre
          elsif spec_pre.is_a?(String)
-            self.class.load(spec_pre)
+            Baltix.load(spec_pre)
          elsif options&.spec_file
             Baltix::Spec.load_from(source: IO.read(options.spec_file), options: options, space: self)
          elsif @spec_type || options&.spec_type
@@ -269,9 +269,9 @@ class Baltix::Space
       @spec
    end
 
-   def initialize state_in = {}, options = {}
-      @options = Baltix::CLI::DEFAULT_OPTIONS.merge(options || {})
-      @state = (state_in || {}).to_os
+   def initialize state_in = {}.to_os, options = {}.to_os
+      @options = Baltix::CLI::DEFAULT_OPTIONS.merge(options || {}.to_os)
+      @state = (state_in || {}.to_os)
 
       baltix_log
    end
@@ -369,43 +369,17 @@ class Baltix::Space
    end
 
    class << self
-      def load string
-         if Gem::Version.new(Psych::VERSION) >= Gem::Version.new("4.0.0")
-            YAML.load(string,
-               aliases: true,
-               permitted_classes: [
-                  Baltix::Source::Fake,
-                  Baltix::Source::Rakefile,
-                  Baltix::Source::Gemfile,
-                  Baltix::Source::Gem,
-                  Baltix::Spec::Rpm,
-                  Baltix::Spec::Rpm::Name,
-                  Baltix::Spec::Rpm::Secondary,
-                  Gem::Specification,
-                  Gem::Version,
-                  Gem::Dependency,
-                  Gem::Requirement,
-                  OpenStruct,
-                  Symbol,
-                  Time,
-                  Date
-               ])
-         else
-            YAML.load(string)
-         end
-      end
-
       def load_from! state: Dir[".space"].first, options: {}
 #         system_path_check # TODO required to generate spec rubocop
 
          state_tmp =
             case state
             when IO, StringIO
-               load(state.readlines.join(""))
+               Baltix.load(state.readlines.join(""))
             when String
                raise InvalidSpaceFileError.new(state: state) if !File.file?(state)
 
-               load(IO.read(state))
+               Baltix.load(IO.read(state))
             when NilClass
             else
                raise InvalidSpaceFileError

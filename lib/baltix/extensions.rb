@@ -49,66 +49,17 @@ module Extensions
       end
    end
 
-   module Hash
-#      def deep_merge other, options_in = {}
-#         return self if other.nil? or other.blank?
-#
-#         options = { mode: :append }.merge(options_in)
-#
-#         other_hash = other.is_a?(Hash) && other || { nil => other }
-#         common_keys = self.keys & other_hash.keys
-#         base_hash = (other_hash.keys - common_keys).reduce({}) do |res, key|
-#            res[key] = other_hash[key]
-#            res
-#         end
-#
-#         self.reduce(base_hash) do |res, (key, value)|
-#            new =
-#            if common_keys.include?(key)
-#               case value
-#               when ::Hash, ::OpenStruct
-#                  value.deep_merge(other_hash[key])
-#               when ::Array
-#                  value.concat([ other_hash[key] ].compact.flatten(1))
-#               when ::NilClass
-#                  other_hash[key]
-#               else
-#                  value_out =
-#                     if options[:mode] == :append
-#                        [other_hash[key], value].compact.flatten(1)
-#                     elsif options[:mode] == :prepend
-#                        [value, other_hash[key]].compact.flatten(1)
-#                     else
-#                        value
-#                     end
-#
-#                  if value_out.is_a?(Array) && options[:dedup]
-#                     value_out.uniq
-#                  else
-#                     value_out
-#                  end
-#               end
-#            else
-#               value
-#            end
-#
-#            res[key] = new
-#            res
-#         end
-#      end
-   end
-
    module OpenStruct
       def to_os
          self
       end
 
       def merge_to other
-         ::OpenStruct.new(other.to_h.deep_merge(self.to_h))
+         ::OpenStruct.new(other.to_os.deep_merge(self))
       end
 
       def merge other
-         ::OpenStruct.new(self.to_h.deep_merge(other.to_h))
+         ::OpenStruct.new(self.to_os.deep_merge(other))
       end
 
       def map *args, &block
@@ -182,7 +133,7 @@ module Extensions
       def deep_merge other_in, options_in = {}
          return self if other_in.nil? or other_in.blank?
 
-         options = { mode: :append }.merge(options_in)
+         options = { mode: :replace }.merge(options_in)
 
          other =
             if other_in.is_a?(::OpenStruct)
@@ -190,27 +141,27 @@ module Extensions
             elsif other_in.is_a?(::Hash)
                other_in.to_os
             else
-               ::OpenStruct.new(nil => other_in)
+               ::OpenStruct.new(nil => other_in.dup)
             end
 
-         other.reduce(self.to_os) do |res, key, value|
+         other.reduce(self.to_os.dup) do |res, key, value|
             res[key] =
                if res.table.keys.include?(key)
                   case value
                   when ::Hash
-                     value.deep_merge(res[key].to_h, options)
+                     value.to_os.deep_merge(res[key].to_os, options).to_h.stringify_keys
                   when ::OpenStruct
                      value.deep_merge(res[key].to_os, options)
                   when ::Array
-                     value.concat([res[key]].compact.flatten(1))
+                     value | [res[key]].compact.flatten(1)
                   when ::NilClass
                      res[key]
                   else
                      value_out =
                         if options[:mode] == :append
-                           [value, res[key]].compact.flatten(1)
+                           [value, res[key]].compact.flatten(1).uniq
                         elsif options[:mode] == :prepend
-                           [res[key], value].compact.flatten(1)
+                           [res[key], value].compact.flatten(1).uniq
                         else
                            value
                         end
@@ -513,6 +464,28 @@ module Extensions
 
          # binding.pry
          Gem::Requirement.new(reqs_pre.map {|x|x.join(" ")})
+      end
+   end
+
+   module String
+      def snakeize
+         resIn = self.gsub(/::/, '-')
+
+         self.unpack("U*").reduce("") do |res, _|
+            break res if resIn.blank?
+
+            m = resIn.match(/[A-Z]+[^A-Z\-]*/)
+            r = res + resIn[m.begin(0)...m.end(0)].downcase + (resIn[m.end(0)] == '-' ? "-" : m.end(0) != resIn.size ? "_" : "")
+            resIn = resIn[m.end(0)..-1].gsub(/::/, '-')
+
+            r
+         end
+      end
+
+      def constantize
+         self.split('::').reduce(Object) do |c, token|
+           token.empty? && c || c.const_get(token)
+         end
       end
    end
 

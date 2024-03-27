@@ -112,7 +112,7 @@ class Baltix::Spec::Rpm::Secondary
       },
       available_gem_list: {
          seq: %w(of_options of_state >_available_gem_list),
-         default: {}
+         default: {}.to_os
       },
       available_gem_ranges: {
          seq: %w(of_options of_state >_available_gem_ranges),

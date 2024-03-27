@@ -13,24 +13,24 @@ class Baltix::CLI
    DEFAULT_OPTIONS = {
       rootdir: nil,
       spec_type: "rpm",
-      ignored_names: [],
-      regarded_names: [],
-      aliased_names: [],
-      ignored_path_tokens: [],
+      ignored_names: [].freeze,
+      regarded_names: [].freeze,
+      aliased_names: [].freeze,
+      ignored_path_tokens: [].freeze,
       spec_file: nil,
       maintainer_name: nil,
       maintainer_email: nil,
-      available_gem_list: {},
+      available_gem_list: {}.to_os.freeze,
       devel_dep_baltix: :include,
-      use_gem_version_list: {}.to_os,
-      use_gem_obsolete_list: {}.to_os,
+      use_gem_version_list: {}.to_os.freeze,
+      use_gem_obsolete_list: {}.to_os.freeze,
       log_level: :info,
       warn_io: 'stderr',
       error_io: 'stderr',
       info_io: 'stdout',
       debug_io: 'stderr',
-      skip_platforms: %i(jruby)
-   }.to_os
+      skip_platforms: %i(jruby).freeze
+   }.to_os.freeze
 
    def option_parser
       @option_parser ||=
@@ -88,7 +88,7 @@ class Baltix::CLI
             end
 
             opts.on("-g", "--available-gem-list-file=[FILE]", String, "Path to a YAML-formatted file with the list of available gems to replace in dependencies") do |file|
-               options.available_gem_list = YAML.load(IO.read(file))
+               options.available_gem_list = YAML.load(IO.read(file)).to_os
             end
 
             opts.on("--debug-io=[FILE|IO| |-|--]", String, "IO for debug level. Value is file name, or --/stderr for stderr, or -/stdout for stdout, or blank to disable") do |str|

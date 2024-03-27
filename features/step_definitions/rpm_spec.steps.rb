@@ -5,7 +5,7 @@ end
 
 When('developer loads the spec') do
    options = cli.options.merge({ rootdir: File.join(Dir.pwd, 'features/fixtures/blank') }.to_os)
-   @space ||= Baltix::Space::Spec.load_from(@spec_in, options)
+   @space = Baltix::Space::Spec.load_from(@spec_in, options)
 end
 
 When(/(?:he|developer) loads the spec into the space/) do

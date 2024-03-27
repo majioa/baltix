@@ -7,7 +7,7 @@ class Baltix::Spec::Rpm
    attr_reader :spec, :comment, :space
 
    %w(Name Parser Secondary SpecCore).reduce({}) do |types, name|
-     autoload(:"#{name}", File.dirname(__FILE__) + "/rpm/#{name.tableize.singularize}")
+     autoload(:"#{name}", File.dirname(__FILE__) + "/rpm/#{name.snakeize}")
    end
 
    OPTIONS = %w(source conflicts uri vcs maintainer_name maintainer_email
@@ -260,11 +260,11 @@ class Baltix::Spec::Rpm
       },
       available_gem_list: {
          seq: %w(of_options of_state >_available_gem_list),
-         default: {}
+         default: {}.to_os
       },
       versioned_gem_list: {
          seq: %w(of_options of_state >_versioned_gem_list),
-         default: {}
+         default: {}.to_os
       },
       available_gem_ranges: {
          seq: %w(of_options of_state >_available_gem_ranges),
@@ -484,7 +484,7 @@ class Baltix::Spec::Rpm
       case source
       when Baltix::Source::Gem
          value_in.class.parse(value_in, prefix: value_in.class.default_prefix)
-      when Baltix::Source::Gemfile, Baltix::Source::Rakefile
+      when Baltix::Source::Gemfile, Baltix::Source::Rakefile, Baltix::Source::Fake
          value_in.class.parse(value_in, prefix: nil, kind: "app", name: value_in.original_fullname)
       else
          value_in

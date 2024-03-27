@@ -2886,7 +2886,7 @@ Feature: Spec actor
       When developer loads the space
       And developer sets the space option "available_gem_list" to:
          """
-         ---
+         --- !ruby/object:OpenStruct
          rake:
           - 12.0.1
           - 13.0.1

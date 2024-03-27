@@ -4,7 +4,7 @@ require 'baltix/log'
 class Baltix::Source::Base
    extend ::Baltix::Log
 
-   OPTION_KEYS = %i(source_file source_names replace_list aliases alias_names)
+   OPTION_KEYS = %i(source_file source_names replace_list aliases alias_names loader)
    DEFAULT_FILES = %i(readme contrib history changelog license copying code_of_conduct)
 
    DL_DIRS     = ->(s) { ".so.#{s.name}#{RbConfig::CONFIG['sitearchdir']}" }
