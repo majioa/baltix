@@ -65,10 +65,10 @@ typedef  VALUE(*kgio_blocking_fn_t)(void*);
  */
 #ifdef __linux__
 #  ifndef MSG_FASTOPEN
-#    define MSG_FASTOPEN	0x20000000 /* for clients */
+#    define MSG_FASTOPEN       0x20000000 /* for clients */
 #  endif
 #  ifndef TCP_FASTOPEN
-#    define TCP_FASTOPEN	23 /* for listeners */
+#    define TCP_FASTOPEN       23 /* for listeners */
 #  endif
    /* we _may_ have TFO support */
 #  define KGIO_TFO_MAYBE (1)
