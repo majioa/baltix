@@ -125,7 +125,7 @@ class Baltix::CLI
    end
 
    def options
-      @options ||= DEFAULT_OPTIONS.dup
+      @options ||= DEFAULT_OPTIONS.deep_dup
    end
 
    def actions

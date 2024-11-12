@@ -257,7 +257,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
    def valid?
       !name.nil? &&
          spec.version &&
-         (platform == 'ruby' || platform == Gem::Platform::CURRENT) &&
+         (platform == 'ruby' || platform.cpu == RbConfig::CONFIG["target_cpu"]) &&
          spec.name !~ /\u0000/
    end
 
