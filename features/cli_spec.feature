@@ -20,11 +20,8 @@ Feature: Baltix CLI
       And the default option for "rootdir" is "features/fixtures/psych"
       When developer loads baltix executable
       Then property "ignored_names" of space has "psych"
-      And space's property "sources.0.spec.name" is:
-         """
-         psych
-         """
       And property "valid_sources" of space is blank
+      And space's sources has source "psych"
 
 
    Scenario: Baltix CLI regard names validation
@@ -41,11 +38,9 @@ Feature: Baltix CLI
          psych
          erubis
          """
-      And space's property "sources.0.spec.name" is:
-         """
-         psych
-         """
-      And space's property "valid_sources.0.spec.name" is:
+      And space's sources has source "psych"
+      And space's valid sources has source "psych"
+      And space's property "valid_sources.0.name" is:
          """
          psych
          """

@@ -22,3 +22,41 @@ end
 When(/(?:he|developer) sets the space option "([^"]+)" to:/) do |option, text|
    space.options[option] = Baltix.load(text)
 end
+
+Then('space\'s valid sources has source {string}') do |name|
+   names = space.valid_sources.map(&:name).map(&:to_s)
+
+   expect(names).to include(name)
+end
+
+Then('space\'s sources has source {string}') do |name|
+   names = space.sources.map(&:name).map(&:to_s)
+
+   expect(names).to include(name)
+end
+
+Then('space\'s valid sources are blank') do
+   expect(space.valid_sources).to be_blank
+end
+
+Then('property {string} of space is blank') do |property|
+   expect(space.send(property)).to be_blank
+end
+
+Then('property {string} of space isn\'t blank') do |property|
+   expect(space.send(property)).to_not be_blank
+end
+
+Then('property {string} of space matches to:') do |property, text|
+   expect(space.send(property)).to match(text.split("\n"))
+end
+
+Then('space\'s property {string} is:') do |property, text|
+   expect(space_value_for(property)).to eql(text)
+end
+
+Then('space\'s property {string} is blank') do |property|
+   expect(space_value_for(property)).to be_blank
+end
+
+

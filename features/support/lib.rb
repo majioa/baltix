@@ -1,4 +1,6 @@
 module Lib
+   class InvalidObjectMatchError < StandardError; end
+
    def space
       @space ||= cli.space
    end
@@ -37,7 +39,7 @@ module Lib
    end
 
    def error object, real, path = [], exception: true
-      text = "Invalid object match #{object} at path #{path.join('.')}, got #{real}"
+      text = "Invalid object match #{object} at path '#{path.join('.')}', got #{real}"
 
       if exception
          Kernel.puts(text)
@@ -87,6 +89,12 @@ module Lib
 
          deep_match(value, to_val, path | [to_key], exception: exception)
       end.any?
+   end
+
+   def space_value_for property_path
+      property_path.split(".").reduce(space) do |object, sub|
+         sub =~ /^\d+$/ && object[sub.to_i] || object.respond_to?(sub) && object.send(sub) || nil
+      end
    end
 end
 

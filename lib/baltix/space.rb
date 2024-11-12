@@ -192,7 +192,7 @@ class Baltix::Space
 #      end
 #   end
    def valid_sources
-      @valid_sources = stat_sources.map {|(source, status)| status == :valid && source || nil }.compact
+      @valid_sources = stat_sources.map {|(source, status)| status == :valid ? source : nil }.compact
    end
 
 #   def is_regarded? source
