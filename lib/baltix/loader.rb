@@ -61,9 +61,8 @@ module Baltix::Loader
          begin
             push
             Dir.chdir(File.dirname(file)) do
-               _file = File.basename(file).untaint
+               _file = File.basename(file)
                code = File.read(file, mode: 'r:UTF-8:-')
-               code.untaint
 
                value =
                   begin
