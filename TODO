@@ -32,6 +32,8 @@ lost runtime deps
 + ignore by part: example: update-rubygems[doc,lib] to ignore when detecting and processing
 
 
+fix spec gem ruby-next
+
 gem-lemon update stable ver to unstable
 gem-compass - multi gem deps in build requiers (sass), embedded gem = instead of >=, markdown extension for readme, false absent README.md generated in spec
 license-scout - README lost
@@ -79,3 +81,5 @@ uwsgi, aws-s3 проверить гегерацию нового спека
 
 
 rubocop-shopify должен генерить без doc пакета
+
+gem-turbolinks-source from oold name ruby-turbolinks-source-gem
