@@ -76,7 +76,7 @@ Feature: Spec actor
       Then he acquires an "rspec-support" fixture spec for the baltix setup
 
    @policy2_0 @gem_change
-   Scenario: Apply the Spec actor to setup for rspec-support gem and manual Ruby Policy 2.0 setup
+   Scenario: Apply the Spec actor to setup for parser gem and manual Ruby Policy 2.0 setup
          with no gem version upgrade
       Given blank space
       And a spec from fixture "parser"
