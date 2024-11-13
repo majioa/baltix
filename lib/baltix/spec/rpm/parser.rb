@@ -199,19 +199,17 @@ class Baltix::Spec::Rpm::Parser
       value = method(parse_func)[rematched, reflown, opts, context]
       mode = data.is_a?(OpenStruct) && data.mode || :append
       copts = !non_contexted && context.name && opts.secondaries.find do |sec|
-         #binding.pry
          sec.name == Baltix::Spec::Rpm::Name.parse(
             context.name,
-            support_name: opts.name,
             aliases: aliased_names(opts))
       end || opts
       #binding.pry if key =~ /summar/
       #binding.pry if context[:kind]
       if !non_contexted && context.kind && context.kind.to_s != copts["name"].kind
-         copts["name"] =
-            Baltix::Spec::Rpm::Name.parse(copts["name"].original_fullname,
-               kind: context.kind,
-               support_name: copts["name"].support_name)
+         copts["kname"] = Baltix::Spec::Rpm::Name.parse(copts["name"].alias_map[nil].first,kind: context.kind)
+
+         #   Baltix::Spec::Rpm::Name.parse(copts["name"].alias_map[context.kind.to_s]&.first || copts["name"].original_fullname,
+         #      kind: context.kind)
       end
 
       copts[key] =
@@ -235,7 +233,6 @@ class Baltix::Spec::Rpm::Parser
       #binding.pry
          sec.name == Baltix::Spec::Rpm::Name.parse(
             context.name,
-            support_name: opts.name,
             aliases: aliased_names(opts))
       end
    end
@@ -313,7 +310,7 @@ class Baltix::Spec::Rpm::Parser
    # secondary without suffix by default has kind of lib
    def parse_secondary match, flow, opts, context
       context.replace(parse_context_line(match[1], opts))
-      name = Baltix::Spec::Rpm::Name.parse(context.name, support_name: opts.name, aliases: aliased_names(opts))
+      name = Baltix::Spec::Rpm::Name.parse(context.name, aliases: aliased_names(opts))
 
       [{ "name" => name, "version" => opts.version, "release" => opts.release, "summaries" => opts.summaries.dup }.to_os ]
    end

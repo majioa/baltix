@@ -281,7 +281,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                epoch: 1
          """
       When developer loads the space
@@ -303,7 +303,7 @@ Feature: Spec actor
          rootdir: /path/to/dot/space/rootname
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -332,7 +332,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -360,7 +360,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -390,7 +390,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -420,7 +420,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -448,7 +448,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -476,7 +476,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -504,7 +504,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -533,7 +533,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -564,7 +564,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -594,7 +594,7 @@ Feature: Spec actor
          rootdir: /path/to/dot/space/rootname
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -625,7 +625,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -654,7 +654,7 @@ Feature: Spec actor
          rootdir: /path/to/dot/space/rootname
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -688,7 +688,7 @@ Feature: Spec actor
          rootdir: /path/to/dot/space/rootname
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -722,7 +722,7 @@ Feature: Spec actor
          rootdir: /path/to/dot/space/rootname
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -757,7 +757,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -792,7 +792,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -827,7 +827,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -862,7 +862,7 @@ Feature: Spec actor
          rootdir: /path/to/dot/space/rootname
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -897,7 +897,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -932,7 +932,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -970,7 +970,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -1023,12 +1023,12 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
                secondaries: !ruby/object:OpenStruct
-                - !ruby/object:Baltix::Spec::Rpm::Secondary
+                - !ruby/object:OpenStruct
                   options: !ruby/object:OpenStruct
                      table: {}
                   name: !ruby/object:Baltix::Spec::Rpm::Name
@@ -1075,7 +1075,7 @@ Feature: Spec actor
          %package       -n rpm-doc
          Summary:       Summary Defaults
          Summary(ru_RU.UTF-8): Итого
-         Group:         Group1
+         Group:         Development/Documentation
          BuildArch:     arch64
 
          %description   -n rpm-doc
@@ -1093,7 +1093,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -1147,7 +1147,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -1200,7 +1200,9 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
+               options: !ruby/object:OpenStruct
+                  valid: true
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
@@ -1208,19 +1210,20 @@ Feature: Spec actor
                   file1
                   file2
                secondaries:
-                - !ruby/object:Baltix::Spec::Rpm::Secondary
+                - !ruby/object:OpenStruct
                   options: !ruby/object:OpenStruct
-                     table: {}
-                  state:
-                     name: !ruby/object:Baltix::Spec::Rpm::Name
+                  name: !ruby/object:Baltix::Spec::Rpm::Name
+                     name: rpm
+                     kind: doc
+                     alias_map:
+                       ! '': [rpm-doc]
+                       'doc': [rpm]
+                     support_name: !ruby/object:Baltix::Spec::Rpm::Name
                         name: rpm
-                        kind: doc
-                        support_name: !ruby/object:Baltix::Spec::Rpm::Name
-                           name: rpm
-                           kind: app
-                     file_list: |-
-                        file3
-                        file4
+                        kind: app
+                  file_list: |-
+                     file3
+                     file4
          """
       When developer loads the space
       And he renders the template:
@@ -1256,7 +1259,7 @@ Feature: Spec actor
          stat_sources: []
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: "%{var}%var1"
                   kind: app
@@ -1292,7 +1295,7 @@ Feature: Spec actor
          rootdir: /path/to/dot/space/rootname
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: "%{var}%var1"
                   kind: app
@@ -1762,7 +1765,7 @@ Feature: Spec actor
          <% end -%>
          <% end -%>
          <% if secondary.is_doc? -%>
-         <% if secondary.spec.is_same_source?(secondary.source) -%>
+         <% if secondary.doc.is_same_source?(secondary.source) -%>
          %ruby_gemdocdir
          <% else -%>
          %ruby_gemsdocdir/<%= secondary.source&.name %>-<%= secondary.version %>
@@ -2179,7 +2182,7 @@ Feature: Spec actor
          <% end -%>
          <% end -%>
          <% if secondary.is_doc? -%>
-         <% if secondary.spec.is_same_source?(secondary.source) -%>
+         <% if secondary.doc.is_same_source?(secondary.source) -%>
          %ruby_gemdocdir
          <% else -%>
          %ruby_gemsdocdir/<%= secondary.of_source(:name) %>-<%= secondary.version %>
@@ -2403,9 +2406,11 @@ Feature: Spec actor
          rootdir: /path/to/dot/space/rootname
          spec: |
             --- !ruby/object:Baltix::Spec::Rpm
-            state:
+            state: !ruby/object:OpenStruct
                name: !ruby/object:Baltix::Spec::Rpm::Name
-                  aliases: foo-boo
+                  alias_map:
+                     ! '': [foo-boo, foo_boo]
+                     'lib': [foo-boo]
                   prefix: ruby
                   name: foo_boo
                   kind: lib
@@ -2462,11 +2467,13 @@ Feature: Spec actor
                install: install
                check: check
                secondaries:
-                - !ruby/object:Baltix::Spec::Rpm::Secondary
+                - !ruby/object:OpenStruct
                   options: !ruby/object:OpenStruct
                      table: {}
                   name: !ruby/object:Baltix::Spec::Rpm::Name
-                     aliases: foo-boo
+                     alias_map:
+                        ! '': [foo-boo, foo_boo]
+                        'doc': [foo-boo]
                      prefix: ruby
                      suffix: doc
                      name: foo_boo
@@ -2711,7 +2718,7 @@ Feature: Spec actor
          <% end -%>
          <% end -%>
          <% if secondary.is_doc? -%>
-         <% if secondary.spec.is_same_source?(secondary.source) -%>
+         <% if secondary.doc.is_same_source?(secondary.source) -%>
          %ruby_gemdocdir
          <% else -%>
          %ruby_gemsdocdir/<%= secondary.source&.name %>-<%= secondary.version %>
@@ -2762,9 +2769,9 @@ Feature: Spec actor
          %add_findprov_skiplist %ruby_gemslibdir/**/*
          Requires:      gem(c) >= 2.0
          Requires:      req >= 1
-         Obsoletes:     ruby-foo_boo < %EVR
          Obsoletes:     req >= 1
          Obsoletes:     gem(p) < 0.1
+         Obsoletes:     ruby-foo_boo < %EVR
          Provides:      ruby-foo_boo = %EVR
          Provides:      req >= 1
          Provides:      gem(p) < 0.1

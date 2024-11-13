@@ -48,6 +48,8 @@ Group:         Development/Documentation
 BuildArch:     noarch
 
 Requires:      gem(kgio) = 2.11.4
+Obsoletes:     ruby-kgio-doc < %EVR
+Provides:      ruby-kgio-doc = %EVR
 
 %description   -n gem-kgio-doc
 kinder, gentler I/O for Ruby documentation files.

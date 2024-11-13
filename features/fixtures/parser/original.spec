@@ -65,7 +65,7 @@ Documentation files for %gemname gem.
 %setup
 
 %build
-%ruby_build --pre=build --use=parser --alias=parse
+%ruby_build --pre=build --use=parser --alias=ruby-parse
 
 %install
 %ruby_install

@@ -58,6 +58,8 @@ Group:         Development/Documentation
 BuildArch:     noarch
 
 Requires:      gem(ucf) = 2.0.2
+Obsoletes:     ruby-ucf-doc < %EVR
+Provides:      ruby-ucf-doc = %EVR
 
 %description   -n gem-ucf-doc
 This is a Ruby library for working with UCF documents documentation files.

@@ -4,12 +4,23 @@ class Baltix::Spec::Rpm::Name
 
    PREFICES = %w(gem ruby rubygem)
    RULE = /^(?<full_name>(?:(?<prefix>#{PREFICES.join('|')})-)?(?<name>.*?))(?:-(?<suffix>doc|devel))?$/
+   LIB_RULE = /^(?<full_name>(?<name>.*?))(?:-(?<suffix>doc|devel))?$/
 
-   attr_reader :name, :kind, :suffix
+   attr_reader :name, :kind, :suffix, :options
    attr_accessor :support_name
 
+   def approximate_kind
+      @approximate_kind ||= alias_map.map {|x,y| [x,y.size]}.select {|x,_| x}.sort_by {|_,y| y}.last.first
+   end
+
+   def alias_map
+      @alias_map ||= {}
+   end
+
    def aliases
-      @aliases ||= []
+      #alias_map.values.flatten(1).uniq
+      #TODO validate if it is really needed merge with support_name
+      alias_map.values.flatten(1).uniq | (support_name&.aliases || [])
    end
 
    def prefix
@@ -65,12 +76,32 @@ class Baltix::Spec::Rpm::Name
       self.class.new(options.merge(aliases: self.aliases | other.aliases))
    end
 
-   def eql_by? value, other
+   def as kind
+      return self.dup if kind == self.kind
+
+      options_in = options.merge(kind: kind)
+      aliases = alias_for(kind)
+
+      options_in[:name] = aliases.sort_by {|x| x.size }.first unless aliases.blank?
+
+      self.class.new(options_in)
+   end
+
+   def alias_for kind
+      alias_map[kind] || []
+   end
+
+   def eql_by? value, other_in
+      other = other_in.is_a?(String) ? self.class.parse(other_in) : other_in
+
       case value
       when :name
-         ([ self.name, self.aliases ].flatten & [ other.name, other.aliases ].flatten).any?
+         ((alias_for(self.kind) | alias_for(nil)) &
+            (other.alias_for(other.kind) | other.alias_for(nil))).any?
       when :kind
-         self.kind == other.kind
+         !self.kind || !other.kind || self.kind == other.kind
+      when :alias
+         (self.aliases & other.aliases).any?
       when :support_name
          self.support_name === (other.is_a?(self.class) && other.support_name || other)
       else
@@ -92,11 +123,11 @@ class Baltix::Spec::Rpm::Name
    end
 
    def autoprefix
-      %w(exec app fake).include?(kind) || %w(app).include?(support_name&.kind) ? nil : self.class.default_prefix
+      %w(doc lib devel).include?(kind) && !%w(app).include?(support_name&.kind) ? self.class.default_prefix : nil
    end
 
-   def autoname
-      name&.downcase&.gsub(/[\._]/, "-")
+   def autoname n = name
+      n&.downcase&.gsub(/[\._]/, "-")
    end
 
    def autosuffix
@@ -105,49 +136,76 @@ class Baltix::Spec::Rpm::Name
 
    protected
 
-   def initialize options = {}
-      @aliases = options.fetch(:aliases, []) | options.fetch(:name, "").gsub(/[\.\_]+/, "-").split(",")
+   def alias_assign options
+      name_in = alias_for(nil)
+      kind_names =
+         case kind
+         when "doc", "devel"
+            name_in.map { |x| [prefix, x, kind].compact.join("-") }
+         when "lib"
+            name_in.map { |x| [prefix || default_prefix, autoname(x)].join("-") }
+         when "exec", "app"
+            name_in
+         else
+            []
+         end
+
+      alias_map[kind] = alias_for(kind) ? alias_for(kind) | kind_names : kind_names
+   end
+
+   def kind_from_prefix
+      PREFICES.include?(@prefix) ? "lib" : nil
+   end
+
+   def initialize options_in = {}
+      options = self.class.parse_options(options_in[:name], options_in)
+
+      @alias_map = options[:alias_map]
       @prefix = options[:prefix]
       @suffix = options[:suffix]
       @name = options[:name]
       @support_name = options[:support_name]
-      @kind = options[:kind] && options[:kind].to_s ||
-         @suffix ||
-         @prefix && "lib" ||
-         @support_name && "exec" || "app"
+      @kind = options[:kind] ? options[:kind].to_s : self.kind_from_prefix
+      @options = options.freeze
+      self.alias_assign(options)
    end
 
    class << self
-      def parse name_in, options_in = {}
-         m, kind =
+      def parse_options name_in, options_in = {}
+         fullname, kind =
             if name_in.is_a?(self)
-               [name_in.name.match(RULE), name_in.kind]
+               m = name_in.name.match(RULE)
+
+               [m.named_captures["full_name"], name_in.kind ? name_in.kind.to_s : nil]
+            elsif name_in.nil?
+               m = {}
+
+               [nil]
             else
-               [name_in.match(RULE)]
+               m = name_in.match(RULE)
+
+               [name_in]
             end
 
-         aliases_in = (options_in[:aliases] || []).flatten.uniq
-         subaliases = aliases_in - [ m["full_name"] ]
-         #aliases = subaliases | [ m["full_name"] ]
+         kinds = [m["suffix"] || m["prefix"] && "lib" || ["exec", "app"]].flatten
+         name_in = [m["name"], m["name"]&.gsub(/[\-\._]+/, "-")].uniq
+         alias_hash =
+            kinds.reduce({ nil => [options_in[:aliases], fullname].flatten.compact }) do |a, kind_in|
+               a.merge({kind_in.to_s => name_in})
+            end
 
-         raise(InvalidAdoptedNameError) if !m
-
-         prefixed = subaliases.size >= aliases_in.size
          options = {
-            prefix: prefixed && m["prefix"] || nil,
-            #prefix: subaliases.blank? && m["prefix"] || nil,
-            #prefix: m["prefix"],
-            suffix: m["suffix"],
             kind: kind,
-            #name: m["name"],
-            name: prefixed && m["name"] || m["full_name"],
-            #name: subaliases.blank? && m["name"] || m["full_name"],
-         }.merge(options_in).merge({
-            aliases: subaliases | [ m["full_name"] ]
+            name: fullname,
+         }.merge(options_in.dup).merge({
+            alias_map: alias_hash.merge((options_in[:alias_map] || {}).dup)
          })
+      end
 
-         options[:name] = options[:name].blank? && options[:aliases].first || options[:name]
-         #binding.pry if name_in =~ /oed/
+      def parse name_in, options_in = {}
+         options = parse_options(name_in, options_in)
+
+         options[:name] = options[:name].blank? ? (options[:aliases] || []).first : options[:name]
 
          new(options)
       end

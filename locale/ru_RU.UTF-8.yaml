@@ -6,8 +6,12 @@ spec:
          fix: "- ! спек"
          new: "- + самоцвет упакован на основе политик Ruby 2.0"
       app:
+         summary: "%summary"
+         description: "%summary."
          group: Other
       lib:
+         summary: "%summary"
+         description: "%summary."
          group: Development/Ruby
       exec:
          summary: Исполнямка для самоцвета %source_name

@@ -4,7 +4,7 @@ require 'baltix/spec'
 require 'baltix/i18n'
 
 class Baltix::Spec::Rpm
-   attr_reader :spec, :comment, :space
+   attr_reader :comment, :space, :doc
 
    %w(Name Parser Secondary SpecCore).reduce({}) do |types, name|
      autoload(:"#{name}", File.dirname(__FILE__) + "/rpm/#{name.snakeize}")
@@ -16,7 +16,7 @@ class Baltix::Spec::Rpm
                 valid_sources available_gem_list rootdir aliased_names
                 time_stamp devel_dep_setup use_gem_version_list use_gem_obsolete_list)
 
-   PARTS = {
+   HAS_PARTS = {
       lib: nil,
       exec: :has_executables?,
       doc: :has_docs?,
@@ -41,7 +41,7 @@ class Baltix::Spec::Rpm
          default: nil,
       },
       version: {
-         seq: %w(of_options of_source of_state of_default >_version),
+         seq: %w(of_options of_source of_state of_default >_version_of_secondaries >_reversion >_version),
          default: ->(this) { this.options.time_stamp || Time.now.strftime("%Y%m%d") },
       },
       release: {
@@ -69,11 +69,11 @@ class Baltix::Spec::Rpm
          default: [],
       },
       provides: {
-         seq: %w(of_options of_state of_default >_provides),
+         seq: %w(of_options of_state of_default >_provides >_find_provides),
          default: [],
       },
       obsoletes: {
-         seq: %w(of_options of_state of_default >_obsoletes),
+         seq: %w(of_options of_state of_default >_obsoletes >_find_obsoletes),
          default: [],
       },
       file_list: {
@@ -172,7 +172,7 @@ class Baltix::Spec::Rpm
       },
       context: {
          seq: %w(of_options of_state),
-         default: {},
+         default: {}.to_os,
       },
       comment: {
          seq: %w(of_options of_state),
@@ -310,7 +310,7 @@ class Baltix::Spec::Rpm
    end
 
    def state_kind
-      @state_kind ||= options.main_source.is_a?(Baltix::Source::Gem) && "lib" || state['file_list'].blank? && "app" || pre_name&.kind
+      @state_kind ||= pre_name&.kind || state['file_list'].blank? && default_state_kind
    end
 
    def default_state_kind
@@ -325,95 +325,14 @@ class Baltix::Spec::Rpm
       space
    end
 
+   def names
+      @names ||= [name.to_s] | secondaries.map {|sec| sec.name.to_s }.uniq
+   end
+
    # +has_any_docs?+ returns true if self or child source has any doc
    #
    def has_any_docs?
       all_docs.any?
-   end
-
-   # +assign_state_sources+ infers all the unassigned state to convert to sources main and secondaries from the state
-   def assign_state_to_sources sources
-      packages = [ self ] | of_state(:secondaries)
-
-      packages.map do |package|
-         #   binding.pry
-         package.options&.main_source ||
-            case package.state_kind || package.name.kind || default_state_kind
-            when "lib"
-               spec = Gem::Specification.new do |s|
-                  s.name = package.name.autoname
-                  s.version, s.summary =
-                     if package.state
-                        [ package.state["version"], package.state["summaries"]&.[]("") ]
-                     elsif package.source
-                        [ package.source.version, package.source.summary ]
-                     else
-                        [ package.version, package.summaries&.[]("") ]
-                     end
-               end
-               #   binding.pry
-
-               Baltix::Source::Gem.new({"spec" => spec})
-            when "app"
-               #name = package.of_options(:name) ||
-               #   package.of_state(:name) ||
-               #   rootdir && rootdir.split("/").last
-               name = package.pre_name
-
-               Baltix::Source::Gemfile.new({
-                  "rootdir" => rootdir,
-                  "name" => name.to_s,
-                  "version" => of_options(:version) || of_state(:version)
-               })
-            end
-      end.compact
-   end
-
-   def state_sources
-      packages = [ self ] | (of_state(:secondaries) || of_default(:secondaries))
-
-      packages.map do |package|
-         package.options&.main_source ||
-            case package.state_kind || package.name.kind || default_state_kind
-            when "lib"
-               #binding.pry
-               spec = Gem::Specification.new do |s|
-                  s.name = (package.is_a?(OpenStruct) ? package.name : package.pre_name).autoname
-                  s.version, s.summary =
-                     if package.state
-                        [ package.state["version"], package.state["summaries"]&.[]("") ]
-                     elsif package.source
-                        [ package.source.version, package.source.summary ]
-                     else
-                        [ package.version, package.summaries&.[]("") ]
-                     end
-               end
-               # binding.pry
-
-               Baltix::Source::Gem.new({"spec" => spec})
-            when "app"
-               #name = package.of_options(:name) ||
-               #   package.of_state(:name) ||
-               #   rootdir && rootdir.split("/").last
-               name = package.pre_name
-
-               if rootdir
-                  Baltix::Source::Gemfile.new({
-                     "rootdir" => rootdir,
-                     "name" => name.to_s,
-                     "version" => of_options(:version) || of_state(:version)
-                  })
-               elsif space&.valid_sources&.first
-                  space&.valid_sources&.first
-               else
-                  Baltix::Source::Fake.new({
-                     "rootdir" => rootdir,
-                     "name" => name.to_s,
-                     "version" => of_options(:version) || of_state(:version)
-                  })
-               end
-            end
-      end.compact
    end
 
    def pure_build_requires
@@ -441,15 +360,18 @@ class Baltix::Spec::Rpm
    end
 
    def source
-      @source ||= space&.main_source || sources.find {|source_in| pre_name == source_in.name }
+      @source ||= space&.main_source || sources.find {|source_in| pre_name == source_in.name } || Baltix::Source::Fake.new({
+         "name" => state.name.fullname,
+         "version" => state.version,
+         "kind" => state.kind || state.name.kind,
+         "valid" => true})
    end
 
+   # +sources+ infers sources from the space if any. filtered out by the ignore names filter 
    def sources
       @sources ||=
-         state_sources.reduce(valid_sources) do |res, source_in|
-            ignore = ignored_names.any? { |x| x === source_in.name }
-
-            ignore || res.find { |x| Name.parse(x.name) == Name.parse(source_in.name) } ? res : res | [ source_in ]
+         space&.valid_sources.reject do |source_in|
+            ignored_names.any? { |x| x === source_in.name }
          end
    end
 
@@ -469,6 +391,26 @@ class Baltix::Spec::Rpm
       @ruby_build ||= variables.ruby_build&.split(/\s+/) || []
    end
 
+   def _global_rename value_in
+      # binding.pry
+      case source
+      when Baltix::Source::Gem
+         value_in.class.parse(value_in, prefix: value_in.class.default_prefix)
+      when Baltix::Source::Gemfile, Baltix::Source::Rakefile, Baltix::Source::Fake
+         value_in.class.parse(value_in, prefix: nil, kind: "app", name: value_in.original_fullname)
+      else
+         value_in
+      end
+   end
+
+   def _version_of_secondaries value_in
+      vers = secondaries.group_by { |sec| sec.source&.version }.select {|k,_| k}.map {|v, arr| [v, arr.size] }.to_h
+
+      if source.is_a?(Baltix::Source::Gemfile)
+         vers.sort {|(_, sizes)| sizes }.last&.first
+      end || value_in
+   end
+
    def _versioned_gem_list value_in
       dep_list = dep_list_intersect(value_in.to_os, available_gem_ranges, gem_versionings)
 
@@ -480,19 +422,20 @@ class Baltix::Spec::Rpm
       end
    end
 
-   def _global_rename value_in
-      case source
-      when Baltix::Source::Gem
-         value_in.class.parse(value_in, prefix: value_in.class.default_prefix)
-      when Baltix::Source::Gemfile, Baltix::Source::Rakefile, Baltix::Source::Fake
-         value_in.class.parse(value_in, prefix: nil, kind: "app", name: value_in.original_fullname)
-      else
-         value_in
-      end
-   end
-
    def _gem_versionings_with_use value_in
       dep_list_merge(_gem_versionings(value_in), use_gem_version_list)
+   end
+
+   def autoaliases
+      @autoaliases =
+         secondaries.map do |sec|
+            case sec.kind
+            when :exec, :app
+               sec.name.alias_for(sec.name.kind)
+            when :lib
+               sec.name.alias_for(sec.name.kind)
+            end
+         end.compact.flatten
    end
 
    def _ruby_alias_names value_in
@@ -513,27 +456,17 @@ class Baltix::Spec::Rpm
       end
    end
 
-   def autoaliases
-      @autoaliases =
-         [ secondaries.map do |sec|
-            sec.name.name
-         end, secondaries.map do |sec|
-            sec.name.support_name&.name
-         end ].transpose.select do |x|
-            x.compact.uniq.size > 1
-         end.flatten
-   end
-
    def _ruby_alias_names_local value_in
       return @ruby_alias_names_local if @ruby_alias_names_local
 
       names =
          if source.kind_of?(Baltix::Source::Gem)
-            [ source&.name, name&.name, name&.aliases ].flatten
+            [source&.name, name&.name, name.alias_map["app"]].flatten
          else
-            [ source&.name, name&.fullname ]
+            [source&.name, name&.fullname]
          end.compact.uniq
 
+    #    binding.pry
       @ruby_alias_names_local = value_in | (names.size > 1 && [ names ] || [])
    end
 
@@ -545,15 +478,24 @@ class Baltix::Spec::Rpm
 
    def _secondaries value_in
       names = value_in.map { |x| x.name }
+      #context_in = { context: context }.to_os
+      secondaries_in = of_state(:secondaries) || []
 
       # binding.pry
-      to_ignore = (names | [source&.name] | ignored_names).compact
-      secondaries = sources.reject do |source_in|
+      #to_ignore = (names | [source&.name] | ignored_names).compact
+      to_ignore = ([source&.name] | ignored_names).flatten.compact
+      secondaries = valid_sources.reject do |source_in|
          to_ignore.any? { |i| i === source_in.name }
       end.map do |source|
+         state =
+            secondaries_in.find do |osec|
+               osec.name === source.name&&
+                  %w(app lib).include?(osec.name.kind || osec.name.approximate_kind)
+            end
+
          sec = Secondary.new(source: source,
-                             spec: self,
-                             state: { context: context },
+                             doc: self,
+                             state: state,
                              options: { name_prefix: name.prefix,
                                         gem_versionings: gem_versionings,
                                         available_gem_list: available_gem_list })
@@ -561,37 +503,21 @@ class Baltix::Spec::Rpm
          secondary_parts_for(sec, source)
       end.concat(secondary_parts_for(self, source, )).flatten.uniq {|x| x.name.fullname }
 
-#      secondaries = secondaries.map do |sec|
-#         if presec = names.delete(sec.name)
-#            sub_sec = of_state(:secondaries).find do |osec|
-#               osec.name == presec
-#            end
-#
-#            if sub_sec.is_a?(Secondary)
-#               sub_sec.resourced_from(sec)
-#            elsif sub_sec.is_a?(OpenStruct)
-#               #sec.state = sub_sec
-#              binding.pry
-#               sec
-#            end
-#         else
-#            sec
-#         end
-#      end
-#
       # binding.pry
       secondaries =
          names.reduce(secondaries) do |secs, an|
             next secs if secs.find { |sec| sec.name == an }
             sec = value_in.find { |sec| sec.name == an }
+      # binding.pry if sec
 
             if sec.is_a?(Secondary)
                secs | [sec]
             elsif sec.is_a?(OpenStruct)
-               source = sources.find { |s| sec.name == s.name }
+               #source = sources.find { |s| sec.name == s.name } || Baltix::Source::Fake.new
+               source = Baltix::Source::Fake.new
                host = secs.find { |sec_in| sec_in.name.eql_by?(:name, sec.name) }
 
-               secs | [Secondary.new(spec: self,
+               secs | [Secondary.new(doc: self,
                              kind: sec.name.kind,#an.kind
                              host: host,
                              state: sec,
@@ -605,9 +531,51 @@ class Baltix::Spec::Rpm
          end
 
       # binding.pry
-      secondaries.select do |sec|
-         sec.kind != :devel || options.devel_dep_setup != :skip
-      end
+      secondaries =
+         secondaries.select do |sec|
+            sec.kind != :devel || options.devel_dep_setup != :skip
+         end
+
+      secondaries
+   end
+
+   def secondary_parts_for object, source
+      context_in = { context: context }.to_os
+      secondaries_in = of_state(:secondaries) || []
+
+      HAS_PARTS.map do |(kind, func)|
+         next object.is_a?(Secondary) && object || nil if !func
+
+            state =
+               secondaries_in.find do |osec|
+                  kinds = [osec.name.kind || osec.name.approximate_kind, osec.kname&.kind || osec.kname&.approximate_kind].compact
+
+                  if source.respond_to?(:spec) && source.spec.respond_to?(:executables)
+                     (source.executables | [source.name]).any? {|s| osec.name === s }
+                  else
+                     osec.name === source.name
+                  end && kinds.include?(kind.to_s)
+               end
+
+         if object.send(func) || state
+            presec =
+               Secondary.new(source: source,
+                             doc: self,
+                             kind: kind,
+                             host: object,
+                             state: state,
+                             options: { name_prefix: kind != :exec && name.prefix || nil,
+                                        gem_versionings: gem_versionings,
+                                        available_gem_list: available_gem_list })
+
+            unless presec.state
+               state = secondaries_in.find { |osec| osec.name == presec.name }
+               presec.state = state if state
+            end
+
+            presec
+         end
+      end.compact
    end
 
    def _build_dependencies value_in
@@ -779,54 +747,12 @@ class Baltix::Spec::Rpm
       value_in.split(",") | (of_state(:ruby_on_build_rake_tasks) || list || "").split(",")
    end
 
-   def secondary_parts_for object, source
-      context_in = { context: context }.to_os
-      secondaries_in = of_state(:secondaries) || []
-a=
-      PARTS.map do |(kind, func)|
-         next object.is_a?(Secondary) && object || nil if !func
-
-         if object.send(func)
-#      secondaries = secondaries.map do |sec|
-#         if presec = names.delete(sec.name)
-#            sub_sec = of_state(:secondaries).find do |osec|
-#               osec.name == presec
-#            end
-#
-#            if sub_sec.is_a?(Secondary)
-#               sub_sec.resourced_from(sec)
-#            elsif sub_sec.is_a?(OpenStruct)
-#               #sec.state = sub_sec
-#              binding.pry
-#               sec
-#            end
-#         else
-#            sec
-#         end
-#      end
-         presec =
-            Secondary.new(source: source,
-                          spec: self,
-                          kind: kind,
-                          host: object,
-                          state: context_in,
-                          options: { name_prefix: kind != :exec && name.prefix || nil,
-                                     gem_versionings: gem_versionings,
-                                     available_gem_list: available_gem_list })
-
-         state = secondaries_in.find { |osec| osec.name == presec }
-         presec.state = state if state
-
-         presec
-         end
-      end.compact
-      a
-   end
 
    def initialize state: {}, options: {}, space: nil
-      @state = state
+      @state = state.to_os
       @options = options.to_os.merge(space.options)
       @space = space || raise
+      @doc = self
    end
 
    class << self
@@ -843,6 +769,7 @@ a=
 
       def render space, spec_in = nil
          spec = space.spec || self.new(space: space)
+
          spec.render(spec_in)
       end
    end

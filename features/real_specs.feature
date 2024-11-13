@@ -1,7 +1,7 @@
 @actor @spec @gem
 Feature: Spec actor
 
-   @policy1_0 @gem_change
+   @policy1_0 @gem_change @main_is_gem
    Scenario: Apply the Spec actor to setup for ucf gem and old Ruby Policy 1.0 setup
       Given blank space
       And a spec from fixture "ucf"
@@ -13,7 +13,7 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "ucf" fixture spec for the baltix setup
 
-   @policy1_0 @gem_change @gem_obsolete_list
+   @policy1_0 @gem_change @gem_obsolete_list @main_is_gem
    Scenario: Apply the Spec actor to setup for zip-container gem and old Ruby Policy 1.0 setup
       Given blank space
       And a spec from fixture "zip-container"
@@ -28,9 +28,10 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "zip-container" fixture spec for the baltix setup
 
-   @policy1_0 @gem_change @olddoc @wrongdoc
+   @policy1_0 @gem_change @olddoc @wrongdoc @main_is_gem
    Scenario: Apply the Spec actor to setup for kgio gem with Olddoc/Wrongdoc specification
-         and old Ruby Policy 1.0 setup
+         and old Ruby Policy 1.0 setup, where root main source is a gem so it doesnt parse
+         the the prefix, and suffix, and just use a default in output spec
       Given blank space
       And a spec from fixture "kgio"
       When developer locks the time to "21.04.2021"
@@ -43,7 +44,7 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "kgio" fixture spec for the baltix setup
 
-   @policy2_0 @gem_change
+   @policy2_0 @gem_change @main_is_gem
    Scenario: Apply the Spec actor to setup for rbvmomi gem and manual Ruby Policy 2.0 setup
          with optimize available gem list feature
       Given blank space
@@ -59,7 +60,7 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "rbvmomi" fixture spec for the baltix setup
 
-   @policy2_0 @release_change
+   @policy2_0 @release_change @main_is_gem
    Scenario: Apply the Spec actor to setup for rspec-support gem and manual Ruby Policy 2.0 setup
          with no gem version upgrade and skipping devel package
       Given blank space
@@ -75,7 +76,7 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "rspec-support" fixture spec for the baltix setup
 
-   @policy2_0 @gem_change
+   @policy2_0 @gem_change @main_is_gem
    Scenario: Apply the Spec actor to setup for parser gem and manual Ruby Policy 2.0 setup
          with no gem version upgrade
       Given blank space
@@ -112,6 +113,7 @@ Feature: Spec actor
       - pickup core version from common versions of submodules
       - proper detection of host rpm name line ruby-gnome2 not to rename to gem-gnome2
       - autoskip packages when they lost gemspecs like ruby-gnome2 *-no-gi packages or gem-vte defined in the original spec
+      - since the top source is an application / group, so it doesn't parse a prefix, and use no prefix then
       Given blank space
       And a spec from fixture "ruby-gnome2"
       When developer locks the time to "09.03.2022"

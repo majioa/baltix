@@ -1,6 +1,7 @@
 %define        _unpackaged_files_terminate_build 1
 %def_enable    check
 %def_enable    doc
+%def_enable    devel
 
 Name:          ruby-gnome2
 Version:       3.5.1
@@ -67,6 +68,7 @@ BuildRequires: gem(native-package-installer) >= 1.0.3
 BuildRequires: gem(pkg-config) >= 1.3.5
 BuildRequires: gem(rake) >= 0
 BuildRequires: gem(test-unit) >= 2
+BuildRequires: gem(vte) = 3.5.1
 BuildRequires: gem(webrick) >= 0
 %endif
 
@@ -78,6 +80,127 @@ BuildRequires: gem(webrick) >= 0
 %description
 This is a set of bindings for the GNOME 2.x and 3.x libraries to use from Ruby
 2.1, 2.2, 2.3 and 2.4.
+
+
+%package       -n gem-vte3
+Version:       3.5.1
+Release:       alt1
+Summary:       Ruby/VTE3 is a Ruby binding of VTE for use with GTK3
+Group:         Development/Ruby
+
+Requires:      gem(vte) = 3.5.1
+Provides:      gem(vte3) = 3.5.1
+
+%description   -n gem-vte3
+Ruby/VTE3 is a Ruby binding of VTE for use with GTK3.
+
+
+%if_enabled    doc
+%package       -n gem-vte3-doc
+Version:       3.5.1
+Release:       alt1
+Summary:       Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files
+Summary(ru_RU.UTF-8): Файлы сведений для самоцвета vte3
+Group:         Development/Documentation
+BuildArch:     noarch
+
+Requires:      gem(vte3) = 3.5.1
+
+%description   -n gem-vte3-doc
+Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files.
+
+%description   -n gem-vte3-doc -l ru_RU.UTF-8
+Файлы сведений для самоцвета vte3.
+%endif
+
+
+%if_enabled    devel
+%package       -n gem-vte3-devel
+Version:       3.5.1
+Release:       alt1
+Summary:       Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 development package
+Summary(ru_RU.UTF-8): Файлы для разработки самоцвета vte3
+Group:         Development/Ruby
+BuildArch:     noarch
+
+Requires:      gem(vte3) = 3.5.1
+
+%description   -n gem-vte3-devel
+Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 development package.
+
+%description   -n gem-vte3-devel -l ru_RU.UTF-8
+Файлы для разработки самоцвета vte3.
+%endif
+
+
+%package       -n gem-glib2
+Version:       3.5.1
+Release:       alt1
+Summary:       GLib 2 bindings for the Ruby language
+Group:         Development/Ruby
+
+Requires:      gem(pkg-config) >= 1.3.5
+Requires:      gem(native-package-installer) >= 1.0.3
+Obsoletes:     ruby-glib2 < %EVR
+Provides:      ruby-glib2 = %EVR
+Provides:      gem(glib2) = 3.5.1
+
+%description   -n gem-glib2
+GLib is a useful general-purpose C library, notably used by GTK+ and GNOME. This
+package contains libraries for using GLib 2 with the Ruby programming language.
+It is most likely useful in conjunction with Ruby bindings for other libraries
+such as GTK+.
+
+
+%if_enabled    doc
+%package       -n gem-glib2-doc
+Version:       3.5.1
+Release:       alt1
+Summary:       GLib 2 bindings for the Ruby language documentation files
+Summary(ru_RU.UTF-8): Файлы сведений для самоцвета glib2
+Group:         Development/Documentation
+BuildArch:     noarch
+
+Requires:      gem(glib2) = 3.5.1
+Obsoletes:     ruby-glib2-doc < %EVR
+Provides:      ruby-glib2-doc = %EVR
+
+%description   -n gem-glib2-doc
+GLib 2 bindings for the Ruby language documentation files.
+
+GLib is a useful general-purpose C library, notably used by GTK+ and GNOME. This
+package contains libraries for using GLib 2 with the Ruby programming language.
+It is most likely useful in conjunction with Ruby bindings for other libraries
+such as GTK+.
+
+%description   -n gem-glib2-doc -l ru_RU.UTF-8
+Файлы сведений для самоцвета glib2.
+%endif
+
+
+%if_enabled    devel
+%package       -n gem-glib2-devel
+Version:       3.5.1
+Release:       alt1
+Summary:       GLib 2 bindings for the Ruby language development package
+Summary(ru_RU.UTF-8): Файлы для разработки самоцвета glib2
+Group:         Development/Ruby
+BuildArch:     noarch
+
+Requires:      gem(glib2) = 3.5.1
+Requires:      gem(test-unit) >= 2
+
+%description   -n gem-glib2-devel
+GLib 2 bindings for the Ruby language development package.
+
+GLib is a useful general-purpose C library, notably used by GTK+ and GNOME. This
+package contains libraries for using GLib 2 with the Ruby programming language.
+It is most likely useful in conjunction with Ruby bindings for other libraries
+such as GTK+.
+
+%description   -n gem-glib2-devel -l ru_RU.UTF-8
+Файлы для разработки самоцвета glib2.
+%endif
 
 
 %if_enabled    devel
@@ -108,129 +231,6 @@ This is a set of bindings for the GNOME 2.x and 3.x libraries to use from Ruby
 %endif
 
 
-%package       -n gem-glib2
-Version:       3.5.1
-Release:       alt1
-Summary:       GLib 2 bindings for the Ruby language
-Group:         Development/Ruby
-
-Requires:      gem(pkg-config) >= 1.3.5
-Requires:      gem(native-package-installer) >= 1.0.3
-Obsoletes:     ruby-glib2
-Provides:      ruby-glib2
-Provides:      gem(glib2) = 3.5.1
-
-%description   -n gem-glib2
-GLib is a useful general-purpose C library, notably used by GTK+ and GNOME. This
-package contains libraries for using GLib 2 with the Ruby programming language.
-It is most likely useful in conjunction with Ruby bindings for other libraries
-such as GTK+.
-
-
-%if_enabled    devel
-%package       -n gem-glib2-devel
-Version:       3.5.1
-Release:       alt1
-Summary:       GLib 2 bindings for the Ruby language development package
-Summary(ru_RU.UTF-8): Файлы для разработки самоцвета glib2
-Group:         Development/Ruby
-BuildArch:     noarch
-
-Requires:      gem(glib2) = 3.5.1
-Requires:      gem(test-unit) >= 2
-Obsoletes:     ruby-gnome2-devel
-Provides:      ruby-gnome2-devel
-
-%description   -n gem-glib2-devel
-GLib 2 bindings for the Ruby language development package.
-
-GLib is a useful general-purpose C library, notably used by GTK+ and GNOME. This
-package contains libraries for using GLib 2 with the Ruby programming language.
-It is most likely useful in conjunction with Ruby bindings for other libraries
-such as GTK+.
-
-%description   -n gem-glib2-devel -l ru_RU.UTF-8
-Файлы для разработки самоцвета glib2.
-%endif
-
-
-%if_enabled    doc
-%package       -n gem-glib2-doc
-Version:       3.5.1
-Release:       alt1
-Summary:       GLib 2 bindings for the Ruby language documentation files
-Summary(ru_RU.UTF-8): Файлы сведений для самоцвета glib2
-Group:         Development/Documentation
-BuildArch:     noarch
-
-Requires:      gem(glib2) = 3.5.1
-Obsoletes:     ruby-glib2-doc
-Provides:      ruby-glib2-doc
-
-%description   -n gem-glib2-doc
-GLib 2 bindings for the Ruby language documentation files.
-
-GLib is a useful general-purpose C library, notably used by GTK+ and GNOME. This
-package contains libraries for using GLib 2 with the Ruby programming language.
-It is most likely useful in conjunction with Ruby bindings for other libraries
-such as GTK+.
-
-%description   -n gem-glib2-doc -l ru_RU.UTF-8
-Файлы сведений для самоцвета glib2.
-%endif
-
-
-%package       -n gem-vte3
-Version:       3.5.1
-Release:       alt1
-Summary:       Ruby/VTE3 is a Ruby binding of VTE for use with GTK3
-Group:         Development/Ruby
-
-Requires:      gem(vte) = 3.5.1
-Provides:      gem(vte3) = 3.5.1
-
-%description   -n gem-vte3
-Ruby/VTE3 is a Ruby binding of VTE for use with GTK3.
-
-
-%if_enabled    devel
-%package       -n gem-vte3-devel
-Version:       3.5.1
-Release:       alt1
-Summary:       Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 development package
-Summary(ru_RU.UTF-8): Файлы для разработки самоцвета vte3
-Group:         Development/Ruby
-BuildArch:     noarch
-
-Requires:      gem(vte3) = 3.5.1
-
-%description   -n gem-vte3-devel
-Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 development package.
-
-%description   -n gem-vte3-devel -l ru_RU.UTF-8
-Файлы для разработки самоцвета vte3.
-%endif
-
-
-%if_enabled    doc
-%package       -n gem-vte3-doc
-Version:       3.5.1
-Release:       alt1
-Summary:       Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files
-Summary(ru_RU.UTF-8): Файлы сведений для самоцвета vte3
-Group:         Development/Documentation
-BuildArch:     noarch
-
-Requires:      gem(vte3) = 3.5.1
-
-%description   -n gem-vte3-doc
-Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files.
-
-%description   -n gem-vte3-doc -l ru_RU.UTF-8
-Файлы сведений для самоцвета vte3.
-%endif
-
-
 %prep
 %setup
 
@@ -244,11 +244,22 @@ Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files.
 %ruby_test
 
 %files
-%ruby_gemspec
-%ruby_gemlibdir
+
+%files         -n gem-vte3
+%doc COPYING.LIB README.md
+%ruby_gemspecdir/vte3-3.5.1.gemspec
+%ruby_gemslibdir/vte3-3.5.1
+%ruby_gemsextdir/vte3-3.5.1
+
+%if_enabled    doc
+%files         -n gem-vte3-doc
+%doc COPYING.LIB README.md
+%ruby_gemsdocdir/vte3-3.5.1
+%endif
 
 %if_enabled    devel
-%files         -n ruby-gnome2-devel
+%files         -n gem-vte3-devel
+%doc COPYING.LIB README.md
 %endif
 
 %files         -n gem-glib2
@@ -257,33 +268,20 @@ Ruby/VTE3 is a Ruby binding of VTE for use with GTK3 documentation files.
 %ruby_gemslibdir/glib2-3.5.1
 %ruby_gemsextdir/glib2-3.5.1
 
-%if_enabled    devel
-%files         -n gem-glib2-devel
-%doc COPYING.LIB README.md
-%ruby_includedir/*
-%endif
-
 %if_enabled    doc
 %files         -n gem-glib2-doc
 %doc COPYING.LIB README.md
 %ruby_gemsdocdir/glib2-3.5.1
 %endif
 
-%files         -n gem-vte3
-%doc COPYING.LIB README.md
-%ruby_gemspecdir/vte3-3.5.1.gemspec
-%ruby_gemslibdir/vte3-3.5.1
-%ruby_gemsextdir/vte3-3.5.1
-
 %if_enabled    devel
-%files         -n gem-vte3-devel
+%files         -n gem-glib2-devel
 %doc COPYING.LIB README.md
+%ruby_includedir/*
 %endif
 
-%if_enabled    doc
-%files         -n gem-vte3-doc
-%doc COPYING.LIB README.md
-%ruby_gemsdocdir/vte3-3.5.1
+%if_enabled    devel
+%files         -n ruby-gnome2-devel
 %endif
 
 

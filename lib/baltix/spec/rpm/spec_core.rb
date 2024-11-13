@@ -118,7 +118,7 @@ module Baltix::Spec::Rpm::SpecCore
                else
                   []
                end
-            end.reverse.pack("U*")
+            end.reverse.pack("U*").sub(/[-_\.]+$/, '')
          else
             executables.first&.gsub(/[_\.]/, '-') || ""
          end
@@ -131,18 +131,26 @@ module Baltix::Spec::Rpm::SpecCore
    protected
 
    def _name value_in
-      return value_in if value_in.is_a?(Baltix::Spec::Rpm::Name)
-
-      (name, aliases) =
-         if is_exec? && executable_name.size >= 3
-            [ executable_name, executables ]
-         elsif executable_name.size < 3
-            [ value_in, executables ]
+      (name, aliases, kind, su) =
+         if is_exec?
+            if state.name
+               [ state.name.to_s, executables, self.kind ]
+            elsif executable_name.size >= 3
+               [ executable_name, executables, self.kind ]
+            else
+               [ value_in, executables, self.kind ]
+            end
+         elsif value_in.is_a?(Baltix::Spec::Rpm::Name)
+            if value_in.alias_map[self.kind.to_s]
+               [ value_in.alias_map[self.kind.to_s].first, [], value_in.kind, value_in.support_name ]
+            else
+               [ value_in.name, value_in.aliases, value_in.kind, value_in.support_name ]
+            end
          else
-            [ value_in, [] ]
+            [ value_in, [], self.kind ]
          end
 
-      Baltix::Spec::Rpm::Name.parse(name, kind: kind, prefix: options[:name_prefix], aliases: aliases)
+      Baltix::Spec::Rpm::Name.parse(name, kind: kind, prefix: options[:name_prefix], aliases: aliases, support_name: su)
    end
 
    def _local_rename value_in
@@ -182,8 +190,14 @@ module Baltix::Spec::Rpm::SpecCore
          locale = locale_in.blank? && Baltix::I18n.default_locale || locale_in
          summary_pre = !%i(lib app).include?(self.kind) && summaries_in[locale_in] || value_in[locale] || value_in[locale_in] || nil
          summary = summary_pre&.match("(.*?)[\-\.,_\s]*?$")&.[](1)
+         default = Baltix::I18n.t(:"spec.rpm.#{self.kind}.summary", locale: locale, binding: binding)
 
-         [ locale_in, Baltix::I18n.t(:"spec.rpm.#{self.kind}.summary", locale: locale, binding: binding) ]
+      #binding.pry
+         if source.is_a?(Baltix::Source::Gem) or source.is_a?(Baltix::Source::Gemfile)
+            [ locale_in, default ]
+         else
+            [ locale_in, summary ]
+         end
       end.to_os.compact
    end
 
@@ -223,7 +237,7 @@ module Baltix::Spec::Rpm::SpecCore
          [ locale, sum ]
       end.to_os.map do |locale_in, summary_in|
          if locale_in.to_s == Baltix::I18n.default_locale
-            if !%i(lib app).include?(self.kind)
+            if (source.is_a?(Baltix::Source::Gem) || source.is_a?(Baltix::Source::Gemfile)) && !%i(lib app).include?(self.kind)
                summary_in = summaries_in[locale_in]
                first = summary_in && (summary_in + ".")
                rest_in = descriptions_in[locale_in]
@@ -235,7 +249,11 @@ module Baltix::Spec::Rpm::SpecCore
             end
          else
             summary_in = summaries_in[locale_in]
-            /(?<s>.+)\.?$/ =~ summary_in && s && "#{s}." || value_in[locale_in]
+            if source.is_a?(Baltix::Source::Gem) or source.is_a?(Baltix::Source::Gemfile)
+               /(?<s>.+)\.?$/ =~ summary_in && s && "#{s}." || value_in[locale_in]
+            else
+               value_in[locale_in]
+            end
          end
       end.compact
    end
@@ -268,27 +286,30 @@ module Baltix::Spec::Rpm::SpecCore
       end
    end
 
-   def _version value_in
-      reversion = gem_versionings.select {|n,v| name.eql?(n, true) }.to_h.values.first
-      value = reversion || value_in
-
-      v=
-      case value
-      when Gem::Version
-         value
-      when Gem::Dependency
-         value.requirement.requirements.first.last
-      when Array
-         Gem::Version.new(value.first.to_s)
-      else
-         Gem::Version.new(value.to_s)
-      end
-
+   def _reversion value_in
       # TODO move reversion to space/sources
       # here is a workaround only
       # reversion to support newer ones
+      reversion = gem_versionings.select {|n,v| name.eql?(n, true) }.to_h.values.first
+
+      reversion || value_in
+   end
+
+   def _version value_in
+      v=
+         case value_in
+         when Gem::Version
+            value_in
+         when Gem::Dependency
+            value_in.requirement.requirements.first.last
+         when Array
+            Gem::Version.new(value_in.first.to_s)
+         else
+            Gem::Version.new(value_in.to_s)
+         end
+
       if name.support_name.blank? # || name.support_name == name
-         if is_spec?
+         if is_dochost?
             (count, (version, sources_tmp)) =
                sources.group_by do |s|
                   s.version ? Gem::Version.new(s.version) : v
@@ -300,16 +321,11 @@ module Baltix::Spec::Rpm::SpecCore
                   s == 0 ? v1 <=> v2 : s
                end.last
 
-            version = reversion.requirement.requirements.first.last if reversion && (sources_tmp.map(&:name) & [reversion.name]).any?
-
-      #binding.pry
-            sources.count <= count * 2 ? version : v
+            v
          elsif source.respond_to?(:spec)
-      #binding.pry
             source.spec.version
-         elsif spec
-      #binding.pry
-            spec.version # TODO как отличить?
+         elsif doc
+            doc.version # TODO как отличить?
          end
       elsif host
          host.version
@@ -318,7 +334,7 @@ module Baltix::Spec::Rpm::SpecCore
       end
    end
 
-   def is_spec?
+   def is_dochost?
       self.respond_to?(:space)
    end
 
@@ -464,36 +480,37 @@ module Baltix::Spec::Rpm::SpecCore
    end
 
    def _provides value_in
-      stated_name = of_state(:name)
-      #binding.pry
-
       provides =
-         if stated_name && stated_name.prefix != name.prefix && stated_name.original_fullname != name.fullname && %i(lib app).include?(self.kind)
-            # TODO optionalize defaults
-            [[ stated_name.prefix, stated_name.name ].compact.join("-") + " = %EVR"]
-         else
-            []
-         end | value_in
+         value_in.reduce([]) do |res, o|
+            names.include?(o) ? res : o =~ /^[^\s]+$/ ? res | [o + " = %EVR"] : res | [o]
+         end.compact
 
       provides |
          case self.kind
          when :lib
-           render_deps([provide_dep].compact)
+            render_deps([provide_dep].compact)
          else
             []
          end
    end
 
+   def _find_provides value_in
+      provide = state.name && state.name.original_fullname != name.fullname ? [state.name.original_fullname + " = %EVR"] : []
+
+      provide | value_in
+   end
+
    def _obsoletes value_in
-      obsoletes = value_in.dup
-      stated_name = of_state(:name)
+      obsoletes =
+         value_in.reduce([]) do |res, o|
+            names.include?(o) ? res : o =~ /^[^\s]+$/ ? res | [o + " < %EVR"] : res | [o]
+         end.compact
+   end
 
-      if stated_name && stated_name.prefix != name.prefix && stated_name.original_fullname != name.fullname && %i(lib app).include?(self.kind)
-         # TODO optionalize defaults
-         obsoletes.unshift([ stated_name.prefix, stated_name.name ].compact.join("-") + " < %EVR")
-      end
+   def _find_obsoletes value_in
+      obsolete = state.name && state.name.original_fullname != name.fullname ? [state.name.original_fullname + " < %EVR"] : []
 
-      obsoletes
+      value_in | obsolete
    end
 
    def _available_gem_list value_in
@@ -567,19 +584,6 @@ module Baltix::Spec::Rpm::SpecCore
 
       dep_list_merge(value_in, pre_vers)
    end
-
-#   def parse_options options_in
-#      options_in&.each do |name, value_in|
-#         value =
-#            if name == "secondaries"
-#               value_in.map { |_name, sec| Secondary.new(spec: self, options: sec) }
-#            else
-#               ::JSON.parse value_in.to_json, object_class: OpenStruct
-#            end
-#
-#         instance_variable_set(:"@#{name}", value)
-#      end
-#   end
 
    class << self
       def included obj

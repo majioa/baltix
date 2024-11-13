@@ -60,6 +60,8 @@ Group:         Development/Documentation
 BuildArch:     noarch
 
 Requires:      gem(zip_container) = 4.0.2
+Obsoletes:     ruby-zip-container-doc < %EVR
+Provides:      ruby-zip-container-doc = %EVR
 
 %description   -n gem-zip-container-doc
 A Ruby library for working with ZIP Container Format files documentation

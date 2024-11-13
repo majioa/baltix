@@ -269,7 +269,7 @@ class Baltix::Space
       @spec
    end
 
-   def initialize state_in = {}.to_os, options = {}.to_os
+   def initialize state_in: {}.to_os, options: {}.to_os
       @options = Baltix::CLI::DEFAULT_OPTIONS.merge(options || {}.to_os)
       @state = (state_in || {}.to_os)
 
@@ -385,7 +385,7 @@ class Baltix::Space
                raise InvalidSpaceFileError
             end.to_os
 
-         @@space[state_tmp.name] = self.new(state_tmp, options)
+         @@space[state_tmp.name] = self.new(state_in: state_tmp, options: options)
       end
 
       def load_from state: Dir[".space"].first, options: {}

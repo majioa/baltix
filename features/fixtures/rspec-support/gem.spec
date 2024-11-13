@@ -44,6 +44,8 @@ Group:         Development/Documentation
 BuildArch:     noarch
 
 Requires:      gem(rspec-support) = 3.8.0
+Obsoletes:     ruby-rspec-support-doc < %EVR
+Provides:      ruby-rspec-support-doc = %EVR
 
 %description   -n gem-rspec-support-doc
 Common code needed by the other RSpec gems documentation files.

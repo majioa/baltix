@@ -1,5 +1,5 @@
 class Baltix::Spec::Rpm::Secondary
-   attr_reader :source, :spec, :host, :source
+   attr_reader :source, :host, :source, :doc
 
    STATE = {
       name: {
@@ -15,7 +15,7 @@ class Baltix::Spec::Rpm::Secondary
          default: nil,
       },
       version: {
-         seq: %w(of_options of_source of_state of_default >_version),
+         seq: %w(of_options of_source of_state of_default >_reversion >_version),
          default: ->(_) { Time.now.strftime("%Y%m%d") },
       },
       release: {
@@ -43,11 +43,11 @@ class Baltix::Spec::Rpm::Secondary
          default: [],
       },
       provides: {
-         seq: %w(of_options of_state of_default >_provides),
+         seq: %w(of_options of_state of_default >_provides >_find_provides),
          default: [],
       },
       obsoletes: {
-         seq: %w(of_options of_state of_default >_obsoletes),
+         seq: %w(of_options of_state of_default >_obsoletes >_find_obsoletes),
          default: [],
       },
       file_list: {
@@ -132,7 +132,7 @@ class Baltix::Spec::Rpm::Secondary
 
    def resourced_from secondary
       @kind = secondary.kind.to_sym
-      @spec = secondary.spec
+      @doc = secondary.doc
       @source = secondary.source
 
       self
@@ -153,6 +153,10 @@ class Baltix::Spec::Rpm::Secondary
       @kind ||= source.is_a?(Baltix::Source::Gem) && :lib || :app
    end
 
+   def names
+      doc.names
+   end
+
    protected
 
    def _group value_in
@@ -160,12 +164,12 @@ class Baltix::Spec::Rpm::Secondary
    end
 
    def _release _value_in
-      spec.changes.last.release
+      doc.changes.last.release
    end
 
-   def initialize spec: raise, source: nil, host: nil, kind: nil, state: {}, options: {}
+   def initialize doc: raise, source: nil, host: nil, kind: nil, state: {}, options: {}
       @source = source
-      @spec = spec
+      @doc = doc
       @host = host
       @kind = kind&.to_sym || self.kind
       @state = state.to_os

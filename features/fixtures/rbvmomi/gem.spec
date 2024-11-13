@@ -62,7 +62,7 @@ Version:       2.4.1
 Release:       alt1
 Summary:       Ruby interface to the VMware vSphere API executable(s)
 Summary(ru_RU.UTF-8): Исполнямка для самоцвета rbvmomi
-Group:         Other
+Group:         Development/Ruby
 BuildArch:     noarch
 
 Requires:      gem(rbvmomi) = 2.4.1

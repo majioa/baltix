@@ -6,10 +6,10 @@
 <% if has_any_docs? -%>
 %def_enable    doc
 <% end -%>
-<% if source.is_a?(Baltix::Source::Gem) -%>
 <% if has_devel? -%>
 %def_enable    devel
 <% end -%>
+<% if source.is_a?(Baltix::Source::Gem) -%>
 %define        gemname <%= source.name %>
 <% end -%>
 
@@ -157,8 +157,10 @@ Provides:      <%= dep %>
 <% if has_readme? -%>
 %doc <%= readme %>
 <% end -%>
+<% if source.is_a?(Baltix::Source::Gem) -%>
 %ruby_gemspec
 %ruby_gemlibdir
+<% end -%>
 <% if has_compilables? -%>
 %ruby_gemextdir
 <% end -%>
@@ -184,7 +186,7 @@ Provides:      <%= dep %>
 <% end -%>
 <% end -%>
 <% if secondary.is_doc? -%>
-<% if secondary.spec.is_same_source?(secondary.source) -%>
+<% if secondary.doc.is_same_source?(secondary.source) -%>
 %ruby_gemdocdir
 <% else -%>
 %ruby_gemsdocdir/<%= secondary.source&.name || secondary.name %>-<%= secondary.version %>
