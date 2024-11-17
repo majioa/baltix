@@ -27,7 +27,7 @@ module Baltix::I18n
 
          file = File.join(File.dirname(__FILE__), "..", "..", "locale", "#{locale}.yaml")
 
-         YAML.load(IO.read(file))
+         Baltix.load(IO.read(file))
       end
 
       def t! path, options = {}

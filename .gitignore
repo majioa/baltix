@@ -8,6 +8,7 @@
 /tmp/
 
 Gemfile.lock
+Makefile
 
 *.o
 .manifest

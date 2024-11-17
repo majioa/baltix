@@ -18,7 +18,7 @@ end
 
 RSpec::Matchers.define :match_record_yaml do |yaml|
    match do |record|
-      deep_match(record, YAML.load(yaml))
+      deep_match(record, Baltix.load(yaml))
    end
 end
 

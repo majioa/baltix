@@ -77,11 +77,11 @@ module Baltix::Loader::Mast
             Gem::Specification.new do |s|
                data =
                   if File.file?(file1) && File.file?(file2)
-                     Kernel.yaml_load(IO.read(file1)).merge(
-                     Kernel.yaml_load(IO.read(file2))).merge(
+                     Baltix.load(IO.read(file1)).merge(
+                        Baltix.load(IO.read(file2))).merge(
                         "manifest" => IO.read(file_in).split("\n"))
                   else
-                     Kernel.yaml_load(IO.read(file3)).merge(
+                     Baltix.load(IO.read(file3)).merge(
                         "manifest" => IO.read(file_in).split("\n"))
                   end
 

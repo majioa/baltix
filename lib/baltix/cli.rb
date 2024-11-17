@@ -88,7 +88,7 @@ class Baltix::CLI
             end
 
             opts.on("-g", "--available-gem-list-file=[FILE]", String, "Path to a YAML-formatted file with the list of available gems to replace in dependencies") do |file|
-               options.available_gem_list = YAML.load(IO.read(file)).to_os
+               options.available_gem_list = Baltix.load(IO.read(file)).to_os
             end
 
             opts.on("--debug-io=[FILE|IO| |-|--]", String, "IO for debug level. Value is file name, or --/stderr for stderr, or -/stdout for stdout, or blank to disable") do |str|

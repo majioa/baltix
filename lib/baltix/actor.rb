@@ -4,8 +4,6 @@ module Baltix::Actor
    class InvalidActorKindError < StandardError; end
    class InvalidContextKindForActorError < StandardError; end
 
-   Gem.load_yaml
-
    AUTOMAP = {
       Spec: "baltix/actor/spec",
       Link: "baltix/actor/link",
@@ -26,7 +24,7 @@ module Baltix::Actor
       end
 
       def scheme
-         @scheme ||= YAML.load(IO.read(File.join(File.dirname(__FILE__), "scheme.erb.yaml")))
+         @scheme ||= Baltix.load(IO.read(File.join(File.dirname(__FILE__), "scheme.erb.yaml")))
       end
 
       def config
@@ -53,7 +51,7 @@ module Baltix::Actor
             h.map do |dir, files|
                files.map do |file|
                   procline(file) do |actor, context_in|
-                     YAML.load(context_in.result(binding))
+                     Baltix.load(context_in.result(binding))
                   end
                end
             end

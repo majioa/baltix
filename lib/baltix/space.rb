@@ -36,8 +36,6 @@ class Baltix::Space
    }
 
 
-   Gem.load_yaml
-
    @@space = {}
    @@options = {}
 

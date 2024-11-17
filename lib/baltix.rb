@@ -11,7 +11,6 @@ require 'baltix/i18n'
 require 'baltix/deps'
 
 module Baltix
-   ::Kernel.extend(Extensions::Kernel)
    ::Object.include(Extensions::Object)
    ::OpenStruct.include(Extensions::OpenStruct)
    ::String.include(Extensions::String)

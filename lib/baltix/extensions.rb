@@ -488,22 +488,4 @@ module Extensions
          end
       end
    end
-
-   module Kernel
-      def yaml_load text
-         if Gem::Version.new(Psych::VERSION) >= Gem::Version.new("4.0.0")
-            YAML.load(text, aliases: true, permitted_classes:
-               [Gem::Specification,
-                Gem::Version,
-                Gem::Dependency,
-                Gem::Requirement,
-                Symbol,
-                OpenStruct,
-                Time,
-                Date])
-         else
-            YAML.load(text)
-         end
-      end
-   end
 end

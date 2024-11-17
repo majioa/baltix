@@ -30,7 +30,7 @@ module Olddoc
             file = Dir["{.olddoc,.wrongdoc}.yml"].first
          end
 
-         @config ||= YAML.load(IO.read(file))
+         @config ||= Baltix.load(IO.read(file))
       end
    end
 end

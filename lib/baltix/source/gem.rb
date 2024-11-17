@@ -51,16 +51,10 @@ class Baltix::Source::Gem < Baltix::Source::Base
 
    attr_reader :gem_version_replace
 
-   Gem.load_yaml
-
    class << self
-      def load spec_in
-         Kernel.yaml_load(spec_in)
-      end
-
       def spec_for options_in = {}
          spec_in = options_in["spec"]
-         spec = spec_in.is_a?(String) && load(spec_in) || spec_in
+         spec = spec_in.is_a?(String) && Baltix.load(spec_in) || spec_in
          version =
             if options_in[:version_replaces] && options_in[:version_replaces][spec.name]
                options_in[:version_replaces][spec.name]
@@ -148,7 +142,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
 
       @original_spec =
          if @original_spec.is_a?(String)
-            YAML.load(@original_spec)
+            Baltix.load(@original_spec)
          else
             self.class.spec_for(options)
          end

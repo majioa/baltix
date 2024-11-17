@@ -24,15 +24,15 @@ module Lib
       when ""
          nil
       when /{.*}/
-         YAML.load(value).to_os
+         Baltix.load(value).to_os
       when /(\[|\|---)/
-         YAML.load(value)
+         Baltix.load(value)
       when /^:/
          value[1..-1].to_sym
       when /:/
          value.split(",").map {|v| v.split(":") }.to_os
       when /.yaml$/
-         YAML.load(IO.read(value))
+         Baltix.load(IO.read(value))
       else
          value
       end
