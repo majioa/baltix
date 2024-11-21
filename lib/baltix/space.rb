@@ -246,6 +246,26 @@ class Baltix::Space
          options.ignored_names.any? { |i| i === source.name }
    end
 
+   def dependencies
+      @dependencies ||=
+         sources.reduce({}) do |res, source|
+            source.dsl.all_dependencies.reduce(res) do |r, dep|
+               r.merge(dep.name => r[dep.name] ? r[dep.name].merge(dep) : dep)
+            end
+         end.values.sort_by {|dep| dep.name }
+   end
+
+   def dependencies_for kinds_in: [], kinds_out: []
+      groups_out = Baltix::DSL.defined_groups_for(kinds_out)
+      groups_in = Baltix::DSL.defined_groups_for(kinds_in) - groups_out
+
+      #binding.pry if kinds_in.include?(:devel)
+      dependencies.select do |dep|
+         (dep.groups & groups_in).any? && !(dep.groups & groups_out).any? &&
+         (dep.platforms.blank? || dep.platforms.any? {|p| Baltix::DSL::PLATFORMS[p] })
+      end
+   end
+
    protected
 
    def gen_spec spec_in = nil

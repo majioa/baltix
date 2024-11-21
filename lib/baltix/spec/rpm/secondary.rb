@@ -34,16 +34,28 @@ class Baltix::Spec::Rpm::Secondary
          seq: %w(of_options >_group),
          default: ->(this) { Baltix::I18n.t("spec.rpm.#{this.kind}.group") },
       },
+      devel_dependencies: {
+         seq: %w(of_options of_state of_default >_prepare_dependencies >_devel_dependencies >_replace_versioning_dependencies >_dependencies_sort),
+         default: [],
+      },
+      binary_dependencies: {
+         seq: %w(of_options of_state of_default >_prepare_dependencies >_binary_dependencies >_replace_versioning_dependencies >_dependencies_sort),
+         default: [],
+      },
+      runtime_dependencies: {
+         seq: %w(of_options of_state of_default >_prepare_dependencies >_runtime_dependencies >_dependencies_sort),
+         default: [],
+      },
       requires: {
-         seq: %w(of_options of_state of_default >_requires_plain_only >_requires),
+         seq: %w(of_options of_state of_default >_requires_plain_only >_requires_ruby >_requires_rubygems |_host_require |_kind_deps >_render_bottom_dep),
          default: [],
       },
       conflicts: {
-         seq: %w(of_options of_state of_default >_conflicts_plain_only >_conflicts),
+         seq: %w(of_options of_state of_default >_conflicts_plain_only >_conflicts_ruby |_kind_deps >_render_top_dep),
          default: [],
       },
       provides: {
-         seq: %w(of_options of_state of_default >_provides >_find_provides),
+         seq: %w(of_options of_state of_default >_provides |_find_provides |_lib_provide -_post_provides >_render_bottom_dep),
          default: [],
       },
       obsoletes: {

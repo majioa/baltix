@@ -5,6 +5,8 @@ spec:
          upgrade: "- ^ %previous_version -> %version"
          fix: "- ! спек"
          new: "- + самоцвет упакован на основе политик Ruby 2.0"
+         rename: "- * переименован пакет с подпакетами"
+         explicit_deps: "- * прописаны явные зависимости"
       app:
          summary: "%summary"
          description: "%summary."

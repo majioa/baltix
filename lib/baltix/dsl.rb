@@ -6,16 +6,43 @@ require 'baltix'
 
 # DSL service for baltix.
 class Baltix::DSL
-   # group to kind mapping
+   # group to kinds mapping
    GROUP_MAPPING = {
-      default: :development,
-      integration: :development,
-      development: :development,
-      test: :development,
-      debug: :development,
-      production: :runtime,
-      true => :runtime,
-   }.reduce(Hash.new(:development)) {|r,(k,v)| r.merge(k => v) }
+      default: [:devel, :test, :runtime],
+      integration: [:build, :devel],
+      development: [:build, :devel],
+      test: [:test, :devel],
+      debug: :devel,
+      runtime: [:runtime, :test],
+      production: [:binary, :runtime],
+      true => [:runtime, :binary]
+   }.reduce(Hash.new([:devel])) {|r,(k,v)| r.merge(k => v) }
+
+   PLATFORMS = {
+      ruby: true,
+      jruby: false
+   }
+
+   DEFAULT_GEM_GROUP = {
+      :test => [
+         /^minitest/, /cucumber/, /^rspec/, /^test-unit/, "test-kitchen", "rack-test", "multi_test", /^codeclimate.*test/,
+         /^guard/, "sunspot_test", /^parallel_/, "buildkite-test_collector", "trailblazer-test", /^ae_/,
+         "fastlane-plugin-test_center", "opentelemetry-test-helpers", "gitlab_quality-test_tooling", /^treye-.*(test|cucumber)/,
+         "puppet-catalog-test", "testdata", "testrbl", /selenium/, "testcentricity_web", /^capybara/, "appium_lib",
+         "awetestlib", /^simplecov/, "busser", "aruba", /rubocop/, "appraisal", /inspec/, "vcr", "gitlab-qa",
+         "turn", "m", /^celluloid/, /faker/, /^danger/, /shoulda/, "crystalball", /^rcov/, "action-cable-testing",
+         "email_spec", /^beaker/, "knapsack", "mail_view", /benchmark/, "approvals", "fakefs", "fivemat", "solano",
+         "equivalent-xml", "generator_spec", "bourne", "optimizely-sdk", "puppetlabs_spec_helper", "xctest_list",
+         "page-object", "slather", "split", "pusher-fake", "webrat", "puffing-billy", /mock/, "derailed_benchmarks", /kitchen/,
+         /^database_cleaner/, "filelock", "parallelized_specs", "luffa", "stub_env", /^teaspoon/, "assert", "capistrano-spec",
+         "flores", "ci_reporter", "testrail-ruby", "serverspec", "ci-queue", "cranky", "ladle", "gimme", "ruby-jmeter", "riot",
+         /^calabash/, "resque_unit", /testing/, "accept_values_for", "temping", /^sauce/, "konacha", "watchr", "fabrication",
+         "fantaskspec", "flights_gui_tests", "cuke_modeler", "axe-matchers", /^autotest/, /^stub/, "scan", "rr", "pwn",
+         "linecook-gem", "robottelo_reporter", "unobtainium", "cornucopia", /rails.*test/, "its", "pdqtest",
+         "webspicy", "expectations", /factory.*bot/, "fake_sqs", "evergreen", "filesystem", "sniff", "html-proofer", "bluff",
+         "bogus", "pact-messages", "sapphire", /jasmine/, "culerity", "fauxhai", /^rufus/, "cobratest", "cypress-rails", "mirage"],
+      :development => [/^bundle/, "native-package-installer", "pkg-config", "racc", /^rake/, "mini_portile2"]
+   }
 
    # attributes
    attr_reader :source_file, :replace_list, :skip_list, :append_list, :spec
@@ -61,7 +88,6 @@ class Baltix::DSL
       if !@fake_gemlock && @fake_gemlock ||= Tempfile.create('Gemfile.lock')
          @fake_gemlock_path = @fake_gemlock.path
 
-         Bundler::SharedHelpers.set_env "BUNDLE_GEMFILE", @fake_gemlock_path
          @fake_gemlock.close
       end
 
@@ -113,19 +139,56 @@ class Baltix::DSL
          end
    end
 
+   def external_dependencies
+      return [] unless source_file
+
+      dir = File.dirname(source_file)
+
+      (Gem::DependencyInstaller.instance_variable_get(:@deps) || []).map do |(path, dep)|
+         if path[0...dir.size] == dir
+            Bundler::Dependency.new(dep.name, dep.requirement, "group" => :development)
+         end
+      end.compact
+   end
+
+   def spec_dependencies
+      (spec&.dependencies || []).map do |dep|
+         group_in = DEFAULT_GEM_GROUP.select {|g, list| list.find {|r| r === dep.name }}&.keys&.first || :test
+         options = {
+            "group" => dep.type == :development ? [group_in] : [:runtime, group_in],
+            "platforms" => dep.respond_to?(:platforms) ? dep.platforms : []
+         }
+
+         Bundler::Dependency.new(dep.name, dep.requirement, options)
+      end
+   end
+
    def original_deps_for kinds_in = nil
-      groups = defined_groups_for(kinds_in)
+      groups = self.class.defined_groups_for(kinds_in)
 
       original_deps.select do |dep|
          (dep.groups & groups).any? &&
-          dep.should_include? # &&
-         # (dep.autorequire || [ true ]).all? { |r| r }
+         (dep.platforms.blank? || dep.platforms.any? {|p| PLATFORMS[p] })
+      end
+   end
+
+   def all_dependencies
+      dsl.dependencies | spec_dependencies | external_dependencies
+   end
+
+   def all_dependencies_for kinds_in: [], kinds_out: []
+      groups_out = Baltix::DSL.defined_groups_for(kinds_out)
+      groups_in = Baltix::DSL.defined_groups_for(kinds_in) - groups_out
+
+      all_dependencies.select do |dep|
+         (dep.groups & groups_in).any? && !(dep.groups & groups_out).any? &&
+         (dep.platforms.blank? || dep.platforms.any? {|p| PLATFORMS[p] })
       end
    end
 
    def original_deps
-      @original_deps ||= definition.dependencies.map do |dep|
-         type = dep.groups.map {|g| GROUP_MAPPING[g]}.compact.uniq.sort.first || dep.type
+      @original_deps ||= all_dependencies.map do |dep|
+         type = dep.groups.map {|g| GROUP_MAPPING[g]}.compact.flatten.uniq.sort.first || dep.type
          dep.instance_variable_set(:@type, type)
          valid = !dep.source.is_a?(Bundler::Source::Path)
 
@@ -156,21 +219,24 @@ class Baltix::DSL
    end
 
    def development_deps kind = :gemspec
-      deps_but(original_deps_for(:development))
-   end
-
-   def defined_groups_for kinds_in = nil
-      no_groups =
-         [kinds_in].compact.flatten.map do |k|
-            GROUP_MAPPING.map do |(g, k_in)|
-               k_in != k && g || nil
-            end.compact
-         end.flatten
-
-      definition.groups - no_groups
+      deps_but(original_deps_for(:devel))
    end
 
    class << self
+      def match_kind_dep dep, *kinds_in
+         groups = defined_groups_for(kinds_in)
+
+         (dep.groups & groups).any?
+      end
+
+      def defined_groups_for *kinds_in
+         kinds_in.flatten.map do |k|
+            GROUP_MAPPING.map do |(g, k_in)|
+               [k_in].flatten.include?(k) && g || nil
+            end.compact
+         end.flatten.select {|x| x.is_a?(Symbol) }
+      end
+
       def merge_dependencies *depses
          depses.reduce({}) do |res, deps|
             deps.reduce(res.dup) do |r, x|
@@ -208,7 +274,7 @@ class Baltix::DSL
    def gemspec_deps
       gemspecs.map do |gs|
          version = gs.version || Gem::Version.new(0)
-         Gem::Dependency.new(gs.name, Gem::Requirement.new(["= #{version}"]), :development)
+         Gem::Dependency.new(gs.name, Gem::Requirement.new(["= #{version}"]), :devel)
       end
    end
 
@@ -216,6 +282,27 @@ class Baltix::DSL
       deps_but(original_deps_for(kinds_in)) | gemspec_deps
    end
 
+   def required_rubies
+      return @required_rubies if @required_rubies
+
+      rubies = {}
+      rubies["ruby"] = spec.required_ruby_version if spec
+      dsl_ruby = dsl.instance_variable_get(:@ruby_version)
+      rubies = rubies.deep_merge(dsl_ruby.engine => dsl_ruby.engine_version) if dsl_ruby
+
+      @required_rubies = rubies
+   end
+
+   def required_rubygems
+      return @required_rubygems if @required_rubygems
+
+      rubygems = spec.required_rubygems_version if spec
+      dsl_rubygems = dsl.instance_variable_get(:@rubygems_version)
+      rubygems = rubygems ? rubygems.merge(dsl_rubygems) : dsl_rubygems if dsl_rubygems
+
+      @required_rubygems = rubygems || Gem::Requirement.new([">= 0"])
+   end
+ 
    def ruby
       { type: required_ruby, version: required_ruby_version }
    end

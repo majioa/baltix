@@ -17,12 +17,14 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
+BuildRequires: gem(rake) >= 0
 %if_enabled check
 BuildRequires: gem(ansi) >= 0
+BuildRequires: gem(bones) >= 3.7.1
+BuildRequires: gem(bones-git) >= 1.2.4
 BuildRequires: gem(indexer) >= 0
 BuildRequires: gem(mast) >= 0
 BuildRequires: gem(minitest) >= 4
-BuildRequires: gem(rake) >= 0
 BuildConflicts: gem(minitest) >= 6
 %endif
 
@@ -33,7 +35,6 @@ Requires:      gem(ansi) >= 0
 Requires:      gem(minitest) >= 4
 Conflicts:     gem(minitest) >= 6
 Provides:      gem(turn) = 0.9.7
-
 
 %description
 Turn provides a set of alternative runners for MiniTest, both colorful and
@@ -93,9 +94,9 @@ Group:         Development/Ruby
 BuildArch:     noarch
 
 Requires:      gem(turn) = 0.9.7
-Requires:      gem(rake) >= 0
 Requires:      gem(indexer) >= 0
 Requires:      gem(mast) >= 0
+Requires:      gem(rake) >= 0
 
 %description   -n gem-turn-devel
 Test Reporters (New) -- new output formats for Testing development
@@ -145,3 +146,4 @@ informative.
 %changelog
 * Wed Apr 21 2021 Pavel Skrylev <majioa@altlinux.org> 0.9.7-alt1
 - + packaged gem with Ruby Policy 2.0
+- * define explicit dependencies

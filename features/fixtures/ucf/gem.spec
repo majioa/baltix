@@ -17,16 +17,16 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-%if_enabled check
 BuildRequires: gem(bundler) >= 0
+BuildRequires: gem(rake) >= 10.4
+BuildConflicts: gem(rake) >= 11
+%if_enabled check
 BuildRequires: gem(coveralls) >= 0
 BuildRequires: gem(nokogiri) >= 1.6
-BuildRequires: gem(rake) >= 10.4
 BuildRequires: gem(rdoc) >= 4.1
 BuildRequires: gem(test-unit) >= 3.0
 BuildRequires: gem(zip-container) >= 4.0.1
 BuildConflicts: gem(nokogiri) >= 2
-BuildConflicts: gem(rake) >= 11
 BuildConflicts: gem(rdoc) >= 5
 BuildConflicts: gem(test-unit) >= 4
 BuildConflicts: gem(zip-container) >= 4.1
@@ -34,12 +34,12 @@ BuildConflicts: gem(zip-container) >= 4.1
 
 %add_findreq_skiplist %ruby_gemslibdir/**/*
 %add_findprov_skiplist %ruby_gemslibdir/**/*
+Requires:      ruby >= 1.9.3
 Requires:      gem(zip-container) >= 4.0.1
 Conflicts:     gem(zip-container) >= 4.1
 Obsoletes:     ruby-ucf < %EVR
 Provides:      ruby-ucf = %EVR
 Provides:      gem(ucf) = 2.0.2
-
 
 %description
 This is a Ruby library for working with UCF documents. See the specification at
@@ -84,16 +84,16 @@ Group:         Development/Ruby
 BuildArch:     noarch
 
 Requires:      gem(ucf) = 2.0.2
-Requires:      gem(rake) >= 10.4
 Requires:      gem(bundler) >= 0
-Requires:      gem(rdoc) >= 4.1
-Requires:      gem(test-unit) >= 3.0
 Requires:      gem(coveralls) >= 0
 Requires:      gem(nokogiri) >= 1.6
+Requires:      gem(rake) >= 10.4
+Requires:      gem(rdoc) >= 4.1
+Requires:      gem(test-unit) >= 3.0
+Conflicts:     gem(nokogiri) >= 2
 Conflicts:     gem(rake) >= 11
 Conflicts:     gem(rdoc) >= 5
 Conflicts:     gem(test-unit) >= 4
-Conflicts:     gem(nokogiri) >= 2
 
 %description   -n gem-ucf-devel
 This is a Ruby library for working with UCF documents development package.
@@ -140,6 +140,8 @@ Format (OCF).
 %changelog
 * Wed Apr 21 2021 Pavel Skrylev <majioa@altlinux.org> 2.0.2-alt1
 - ^ 2.0.0 -> 2.0.2
+- * renamed package with subpackages
+- * define explicit dependencies
 
 * Wed Jul 11 2018 Andrey Cherepanov <cas@altlinux.org> 2.0.0-alt1.1
 - Rebuild with new Ruby autorequirements.

@@ -44,18 +44,18 @@ Patch<%= i == :"0" && (i = "") || i %>:<%= " " * [ 9 - "#{i}".size, 1 ].max %><%
 <% build_pre_requires.each do |dep| -%>
 BuildRequires(pre): <%= dep %>
 <% end -%>
-<% pure_build_requires.each do |dep| -%>
+<% build_requires.each do |dep| -%>
 BuildRequires: <%= dep %>
 <% end -%>
-<% pure_build_conflicts.each do |dep| -%>
-BuildRequires: <%= dep %>
+<% build_conflicts.each do |dep| -%>
+BuildConflicts: <%= dep %>
 <% end -%>
-<% if has_gem_build_requires? || has_gem_build_conflicts? -%>
+<% if has_check_requires? || has_check_conflicts? -%>
 %if_enabled check
-<% gem_build_requires.each do |dep| -%>
+<% check_requires.each do |dep| -%>
 BuildRequires: <%= dep %>
 <% end -%>
-<% gem_build_conflicts.each do |dep| -%>
+<% check_conflicts.each do |dep| -%>
 BuildConflicts: <%= dep %>
 <% end -%>
 %endif

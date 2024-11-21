@@ -8,28 +8,28 @@ Name:          gem-ruby-echoe
 Version:       4.6.6
 Release:       alt1
 Summary:       A Rubygems packaging tool that provides Rake tasks for documentation, extension compiling, testing, and deployment
-License:       Unlicense
+License:       AFL
 Group:         Development/Ruby
 Packager:      Ruby Maintainers Team <ruby@packages.altlinux.org>
 BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
+BuildRequires: gem(rake) >= 0.9.2
 %if_enabled check
 BuildRequires: gem(allison) >= 2.0.3
-BuildRequires: gem(rake) >= 0.9.2
 BuildRequires: gem(rdoc) >= 2.5.11
 BuildRequires: gem(rubyforge) >= 2.0.4
 %endif
 
 %add_findreq_skiplist %ruby_gemslibdir/**/*
 %add_findprov_skiplist %ruby_gemslibdir/**/*
-Requires:      gem(rubyforge) >= 2.0.4
+Requires:      rubygems >= 1.8.4
 Requires:      gem(allison) >= 2.0.3
-Requires:      gem(rdoc) >= 2.5.11
 Requires:      gem(rake) >= 0.9.2
+Requires:      gem(rdoc) >= 2.5.11
+Requires:      gem(rubyforge) >= 2.0.4
 Provides:      gem(ruby-echoe) = 4.6.6
-
 
 %description
 A Rubygems packaging tool that provides Rake tasks for documentation, extension
@@ -108,4 +108,4 @@ compiling, testing, and deployment development package.
 %changelog
 * Wed Apr 21 2021 Pavel Skrylev <majioa@altlinux.org> 4.6.6-alt1
 - + packaged gem with Ruby Policy 2.0
-
+- * define explicit dependencies

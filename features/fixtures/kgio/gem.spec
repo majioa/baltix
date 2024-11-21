@@ -30,7 +30,6 @@ Obsoletes:     ruby-kgio < %EVR
 Provides:      ruby-kgio = %EVR
 Provides:      gem(kgio) = 2.11.4
 
-
 %description
 kgio provides non-blocking I/O methods for Ruby without raising exceptions on
 EAGAIN and EINPROGRESS. It is intended for use with the Unicorn and Rainbows!
@@ -124,6 +123,8 @@ platforms).
 %changelog
 * Wed Apr 21 2021 Pavel Skrylev <majioa@altlinux.org> 2.11.4-alt1
 - ^ 2.11.2 -> 2.11.4
+- * renamed package with subpackages
+- * define explicit dependencies
 
 * Wed Jul 11 2018 Andrey Cherepanov <cas@altlinux.org> 2.11.2-alt1.3
 - Rebuild with new Ruby autorequirements.

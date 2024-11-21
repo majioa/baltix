@@ -5,7 +5,7 @@
 
 Name:          gem-rspec-support
 Version:       3.8.0
-Release:       alt2.1
+Release:       alt3
 Summary:       Common code needed by the other RSpec gems
 License:       MIT
 Group:         Development/Ruby
@@ -16,18 +16,18 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-%if_enabled check
 BuildRequires: gem(rake) > 10.0.0
+%if_enabled check
 BuildRequires: gem(thread_order) >= 1.1.0
 BuildConflicts: gem(thread_order) >= 1.2
 %endif
 
 %add_findreq_skiplist %ruby_gemslibdir/**/*
 %add_findprov_skiplist %ruby_gemslibdir/**/*
+Requires:      ruby >= 1.8.7
 Obsoletes:     ruby-rspec-support < %EVR
 Provides:      ruby-rspec-support = %EVR
 Provides:      gem(rspec-support) = 3.8.0
-
 
 %description
 RSpec::Support provides common functionality to RSpec::Core, RSpec::Expectations
@@ -37,7 +37,7 @@ and RSpec::Mocks. It is considered suitable for internal use only at this time.
 %if_enabled    doc
 %package       -n gem-rspec-support-doc
 Version:       3.8.0
-Release:       alt2.1
+Release:       alt3
 Summary:       Common code needed by the other RSpec gems documentation files
 Summary(ru_RU.UTF-8): Файлы сведений для самоцвета rspec-support
 Group:         Development/Documentation
@@ -83,8 +83,9 @@ and RSpec::Mocks. It is considered suitable for internal use only at this time.
 
 
 %changelog
-* Wed Apr 21 2021 Pavel Skrylev <majioa@altlinux.org> 3.8.0-alt2.1
-- ! spec
+* Wed Apr 21 2021 Pavel Skrylev <majioa@altlinux.org> 3.8.0-alt3
+- * renamed package with subpackages
+- * define explicit dependencies
 
 * Fri Mar 1 2019 Pavel Skrylev <majioa@altlinux.org> 3.8.0-alt2
 - Use Ruby Policy 2.0.

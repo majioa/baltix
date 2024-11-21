@@ -62,11 +62,11 @@ BuildRequires: libpango-devel
 BuildRequires: gst-plugins-devel
 BuildRequires: gcc-c++
 BuildRequires: libbrotli-devel
-%if_enabled check
-BuildRequires: gem(cairo) >= 0
 BuildRequires: gem(native-package-installer) >= 1.0.3
 BuildRequires: gem(pkg-config) >= 1.3.5
 BuildRequires: gem(rake) >= 0
+%if_enabled check
+BuildRequires: gem(cairo) >= 0
 BuildRequires: gem(test-unit) >= 2
 BuildRequires: gem(vte) = 3.5.1
 BuildRequires: gem(webrick) >= 0
@@ -75,7 +75,9 @@ BuildRequires: gem(webrick) >= 0
 %add_findreq_skiplist %ruby_gemslibdir/**/*
 %add_findprov_skiplist %ruby_gemslibdir/**/*
 %ruby_ignore_names rake,ruby-gnome2,gdk3-no-gi,(?-mix:-no-gi)
-
+Requires:      gem(cairo) >= 0
+Requires:      gem(vte) = 3.5.1
+Requires:      gem(webrick) >= 0
 
 %description
 This is a set of bindings for the GNOME 2.x and 3.x libraries to use from Ruby
@@ -139,8 +141,8 @@ Release:       alt1
 Summary:       GLib 2 bindings for the Ruby language
 Group:         Development/Ruby
 
-Requires:      gem(pkg-config) >= 1.3.5
 Requires:      gem(native-package-installer) >= 1.0.3
+Requires:      gem(pkg-config) >= 1.3.5
 Obsoletes:     ruby-glib2 < %EVR
 Provides:      ruby-glib2 = %EVR
 Provides:      gem(glib2) = 3.5.1
@@ -214,10 +216,11 @@ BuildArch:     noarch
 
 Requires:      ruby-gnome2 = 3.5.1-alt1
 Requires:      gem(cairo) >= 0
-Requires:      gem(native-package-installer) >= 0
-Requires:      gem(pkg-config) >= 0
+Requires:      gem(native-package-installer) >= 1.0.3
+Requires:      gem(pkg-config) >= 1.3.5
 Requires:      gem(rake) >= 0
-Requires:      gem(test-unit) >= 0
+Requires:      gem(test-unit) >= 2
+Requires:      gem(vte) = 3.5.1
 Requires:      gem(webrick) >= 0
 
 %description   -n ruby-gnome2-devel

@@ -21,7 +21,6 @@ BuildRequires(pre): rpm-build-ruby
 %add_findprov_skiplist %ruby_gemslibdir/**/*
 Provides:      gem(polyglot) = 0.3.5
 
-
 %description
 The Polyglot library allows a Ruby module to register a loader for the file type
 associated with a filename extension, and it augments 'require' to find and load
@@ -78,3 +77,4 @@ matching files.
 %changelog
 * Wed Apr 21 2021 Pavel Skrylev <majioa@altlinux.org> 0.3.5-alt1
 - + packaged gem with Ruby Policy 2.0
+- * define explicit dependencies

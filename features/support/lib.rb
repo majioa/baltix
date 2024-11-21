@@ -34,7 +34,7 @@ module Lib
       when /.yaml$/
          Baltix.load(IO.read(value))
       else
-         value
+         Baltix.load(value)
       end
    end
 

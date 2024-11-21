@@ -83,12 +83,13 @@ Feature: Spec actor
       And a spec from fixture "parser"
       When developer locks the time to "21.04.2021"
       And he sets the space options as:
-         | options               | value                             |
-         | rootdir               | features/fixtures/parser          |
-         | available_gem_list    | {racc: 1.5.1}                     |
-         | use_gem_version_list  | parser:3.0.1.1                    |
-         | maintainer_name       | Pavel Skrylev                     |
-         | maintainer_email      | majioa@altlinux.org               |
+         | options                              | value                    |
+         | rootdir                              | features/fixtures/parser |
+         | available_gem_list                   | {racc: 1.5.1}            |
+         | use_gem_version_list                 | parser:3.0.1.1           |
+         | maintainer_name                      | Pavel Skrylev            |
+         | maintainer_email                     | majioa@altlinux.org      |
+         | high_default_dependencies_priority   | true                     |
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
       Then he acquires an "parser" fixture spec for the baltix setup
@@ -188,3 +189,30 @@ Feature: Spec actor
          | maintainer_email      | majioa@altlinux.org               |
       And he applies "spec" actor to the baltix setup
       Then he acquires an "echoe" fixture spec for the baltix setup
+
+   @policy2_0 @gem_change @rename @baltix_packager
+   Scenario: Apply the Spec actor to setup for ruby-debug-ide gem and Ruby Policy 2.0 setup
+      - rename to proper name defined by gem spec
+      - use baltix team as packager
+      - filter out gems not required by an allowed (currently ruby) platform
+      - separate the test and developent gem groups
+      - detect required gems for check and build spaces separately
+        in gemfile and ext using gem_install_dependencies
+      - increment alt release in spec as major due to rename
+      - detect required gems for run binaries
+      Given blank space
+      And a spec from fixture "ruby-debug-ide"
+      When developer locks the time to "16.11.2024"
+      And he sets the space options as:
+         | options               | value                             |
+         | rootdir               | features/fixtures/ruby-debug-ide  |
+         | available_gem_list    | {rake: 13.2.1, test-unit: 3.6.2}  |
+         | spec_type             | rpm                               |
+         | packager.name         | Baltix Maintainers Team           |
+         | packager.email        | baltix@packages.altlinux.org      |
+         | autorender_name       | true                              |
+         | maintainer_name       | Baltix Builder Bot                |
+         | maintainer_email      | bbb@altlinux.org                  |
+      And he loads the spec into the space
+      And he applies "spec" actor to the baltix setup
+      Then he acquires an "ruby-debug-ide" fixture spec for the baltix setup

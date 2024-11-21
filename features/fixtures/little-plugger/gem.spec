@@ -25,7 +25,6 @@ BuildConflicts: gem(rspec) >= 4
 %add_findprov_skiplist %ruby_gemslibdir/**/*
 Provides:      gem(little-plugger) = 1.1.4
 
-
 %description
 LittlePlugger is a module that provides Gem based plugin management. By
 extending your own class or module with LittlePlugger you can easily manage the
@@ -114,4 +113,4 @@ loading and initializing of plugins provided by other gems.
 %changelog
 * Wed Apr 21 2021 Pavel Skrylev <majioa@altlinux.org> 1.1.4-alt1
 - + packaged gem with Ruby Policy 2.0
-
+- * define explicit dependencies

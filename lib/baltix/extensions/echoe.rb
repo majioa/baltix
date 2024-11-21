@@ -110,7 +110,11 @@ class Echoe
    def rdoc_template= _
    end
 
-   def platform= _
+   def platform= value
+      spec.platform = value
+   end
+
+   def require_signed
    end
 
    protected
@@ -124,10 +128,11 @@ class Echoe
       vline = IO.read('CHANGELOG').split("\n").find { |x| /^\s*v/ =~ x }
       /v(?<version>[^ ]+)\. / =~ vline
       spec.version = version || "0.0"
-      spec.rubygems_version = ">= 1.2"
       Dir.chdir('bin') do
          spec.executables = Dir['*']
       end if File.directory?('bin')
       yield(self)
+   rescue
+      $stderr.puts "[#{$!.class}] #{$!.message}"
    end
 end

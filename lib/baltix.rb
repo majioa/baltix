@@ -9,6 +9,7 @@ require "baltix/version"
 require "baltix/extensions"
 require 'baltix/i18n'
 require 'baltix/deps'
+require "baltix/license"
 
 module Baltix
    ::Object.include(Extensions::Object)

@@ -29,6 +29,8 @@ class Baltix::CLI
       error_io: 'stderr',
       info_io: 'stdout',
       debug_io: 'stderr',
+      high_default_dependencies_priority: false,
+      autorender_name: false,
       skip_platforms: %i(jruby).freeze
    }.to_os.freeze
 
@@ -103,6 +105,14 @@ class Baltix::CLI
             opts.on("-O", "--use-gem-obsolete=[LIST]", Array, "Comma separated gem obsolete list to forcely use in the baltix") do |gem_obsolete|
                hash = gem_obsolete.map {|gv| gv.split(":") }.map {|(x, y)| [x, y.split(/,/)] }.to_h
                options.use_gem_obsolete_list = options.use_gem_obsolete_list.merge(hash)
+            end
+
+            opts.on("-D", "--[no-]use-high-default-dependencies-priority", "Use high priority dependency parsing before state") do |d|
+               options.high_default_dependencies_priority = d
+            end
+
+            opts.on("-N", "--[no-]autorender-name", "Autorendering name of a source when draw a spec") do |d|
+               options.autorender_name = d
             end
 
             opts.on("-v", "--verbose=[LEVEL]", String, "Run verbosely with levels: none, error, warn, info, or debug") do |v|

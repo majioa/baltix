@@ -25,8 +25,9 @@ BuildRequires: gem(rdoc) >= 4.0
 %add_findreq_skiplist %ruby_gemslibdir/**/*
 %add_findprov_skiplist %ruby_gemslibdir/**/*
 %ruby_alias_names oedipus_lex,oedipus-lex
+Requires:      ruby >= 2.7
+Conflicts:     ruby >= 4.0
 Provides:      gem(oedipus_lex) = 2.6.2
-
 
 %description
 Oedipus Lex is a lexer generator in the same family as Rexical and Rex. Oedipus
@@ -104,8 +105,8 @@ Group:         Development/Ruby
 BuildArch:     noarch
 
 Requires:      gem(oedipus_lex) = 2.6.2
-Requires:      gem(rdoc) >= 4.0
 Requires:      gem(hoe) >= 0
+Requires:      gem(rdoc) >= 4.0
 
 %description   -n gem-oedipus-lex-devel
 Oedipus Lex is a lexer generator in the same family as Rexical and Rex
@@ -170,3 +171,4 @@ Books... books are good. I like books.
 %changelog
 * Wed Apr 21 2021 Pavel Skrylev <majioa@altlinux.org> 2.6.2-alt1
 - + packaged gem with Ruby Policy 2.0
+- * define explicit dependencies

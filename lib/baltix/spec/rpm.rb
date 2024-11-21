@@ -4,7 +4,7 @@ require 'baltix/spec'
 require 'baltix/i18n'
 
 class Baltix::Spec::Rpm
-   attr_reader :comment, :space, :doc
+   attr_reader :comment, :space
 
    %w(Name Parser Secondary SpecCore).reduce({}) do |types, name|
      autoload(:"#{name}", File.dirname(__FILE__) + "/rpm/#{name.snakeize}")
@@ -27,9 +27,17 @@ class Baltix::Spec::Rpm
       packager build_arch source_files build_pre_requires descriptions secondaries
       prep build install check file_list)
 
+   CHANGES_MAJORITY = {
+      fix: :minor,
+      explicit_deps: :minor,
+      rename: :major,
+      upgrade: :version,
+      new: :new,
+   }
+
    STATE = {
       name: {
-         seq: %w(of_options of_state of_source of_default >_name >_global_rename),
+         seq: %w(of_options of_state of_source of_default >_name >_global_rename -_post_name),
          default: "",
       },
       pre_name: {
@@ -41,7 +49,7 @@ class Baltix::Spec::Rpm
          default: nil,
       },
       version: {
-         seq: %w(of_options of_source of_state of_default >_version_of_secondaries >_reversion >_version),
+         seq: %w(of_options of_source of_state of_default >_version_of_secondaries >_reversion >_version -_post_version),
          default: ->(this) { this.options.time_stamp || Time.now.strftime("%Y%m%d") },
       },
       release: {
@@ -61,15 +69,15 @@ class Baltix::Spec::Rpm
          default: ->(this) { Baltix::I18n.t("spec.rpm.#{this.kind}.group") },
       },
       requires: {
-         seq: %w(of_options of_state of_default >_filter_out_obsolete >_requires_plain_only >_requires),
+         seq: %w(of_options of_state of_default >_filter_out_obsolete >_requires_plain_only >_requires_ruby >_requires_rubygems |_host_require |_kind_deps >_render_bottom_dep),
          default: [],
       },
       conflicts: {
-         seq: %w(of_options of_state of_default >_conflicts_plain_only >_conflicts),
+         seq: %w(of_options of_state of_default >_conflicts_plain_only |_conflicts_ruby |_kind_deps >_render_top_dep),
          default: [],
       },
       provides: {
-         seq: %w(of_options of_state of_default >_provides >_find_provides),
+         seq: %w(of_options of_state of_default >_provides |_find_provides |_lib_provide -_post_provides >_render_bottom_dep),
          default: [],
       },
       obsoletes: {
@@ -118,16 +126,40 @@ class Baltix::Spec::Rpm
          seq: %w(of_options of_state),
          default: {}.to_os,
       },
+      devel_dependencies: {
+         seq: %w(of_options of_state of_default >_prepare_dependencies >_devel_dependencies >_fix_dependencies_groups >_replace_versioning_dependencies >_dependencies_sort),
+         default: [],
+      },
+      binary_dependencies: {
+         seq: %w(of_options of_state of_default >_prepare_dependencies >_binary_dependencies >_replace_versioning_dependencies >_dependencies_sort),
+         default: [],
+      },
+      runtime_dependencies: {
+         seq: %w(of_options of_state of_default >_prepare_dependencies >_runtime_dependencies >_replace_versioning_dependencies >_dependencies_sort),
+         default: [],
+      },
       build_dependencies: {
-         seq: %w(of_options of_state of_default >_build_dependencies >_build_dependencies_sort),
+         seq: %w(of_options of_state of_default >_prepare_dependencies >_build_dependencies >_fix_dependencies_groups >_build_dependencies_filter >_replace_versioning_dependencies >_dependencies_sort),
+         default: [],
+      },
+      check_dependencies: {
+         seq: %w(of_options of_state of_default >_prepare_dependencies >_check_dependencies >_fix_dependencies_groups >_check_dependencies_filter >_replace_versioning_dependencies >_dependencies_sort),
          default: [],
       },
       build_requires: {
-         seq: %w(of_options of_state of_default >_filter_out_build_auto_requires >_filter_out_obsolete >_build_requires),
+         seq: %w(of_options of_state of_default >_filter_out_build_auto_requires >_filter_out_obsolete |_build_requires),
+         default: [],
+      },
+      check_requires: {
+         seq: %w(of_options of_state of_default |_check_requires),
          default: [],
       },
       build_conflicts: {
-         seq: %w(of_options of_state of_default >_build_conflicts),
+         seq: %w(of_options of_state of_default |_build_conflicts),
+         default: [],
+      },
+      check_conflicts: {
+         seq: %w(of_options of_state of_default |_check_conflicts),
          default: [],
       },
       build_pre_requires: {
@@ -135,20 +167,8 @@ class Baltix::Spec::Rpm
          default: [ "rpm-build-ruby" ],
       },
       changes: {
-         seq: %w(of_options of_state of_source of_default >_changes),
-         default: ->(this) do
-            version = this.version
-            description = Baltix::I18n.t("spec.rpm.change.new", binding: binding)
-            release = this.of_options(:release) || this.of_state(:release) || "alt1"
-
-            [ OpenStruct.new(
-               date: Date.today.strftime("%a %b %d %Y"),
-               author: this.maintainer.name,
-               email: this.maintainer.email,
-               version: version,
-               release: release,
-               description: description) ]
-         end,
+         seq: %w(of_options of_state of_source of_default >_collect_changes >_changes),
+         default: []
       },
       prep: {
          seq: %w(of_options of_state),
@@ -325,6 +345,10 @@ class Baltix::Spec::Rpm
       space
    end
 
+   def doc
+      @doc ||= self
+   end
+
    def names
       @names ||= [name.to_s] | secondaries.map {|sec| sec.name.to_s }.uniq
    end
@@ -401,6 +425,12 @@ class Baltix::Spec::Rpm
       else
          value_in
       end
+   end
+
+   def _collect_changes value_in
+      %i(name version provides).each {|x| send(x) }
+
+      value_in
    end
 
    def _version_of_secondaries value_in
@@ -482,7 +512,6 @@ class Baltix::Spec::Rpm
       secondaries_in = of_state(:secondaries) || []
 
       # binding.pry
-      #to_ignore = (names | [source&.name] | ignored_names).compact
       to_ignore = ([source&.name] | ignored_names).flatten.compact
       secondaries = valid_sources.reject do |source_in|
          to_ignore.any? { |i| i === source_in.name }
@@ -579,41 +608,43 @@ class Baltix::Spec::Rpm
    end
 
    def _build_dependencies value_in
-      deps_pre = value_in.map do |dep|
-         if !m = dep.match(/gem\((.*)\) ([>=<]+) ([\w\d\.\-]+)/)
-            dep
-            #Gem::Dependency.new(m[1], Gem::Requirement.new(["#{m[2]} #{m[3]}"]), :runtime)
-         end
-      end.compact | development_dependencies
-
-      dep_hash = deps_pre.group_by {|x|x.name}.map {|n, x| [n, x.reduce {|res, y| res.merge(y) } ] }.to_h
-      deps_all = secondaries.reduce(dep_hash.dup) do |res, x|
-         next res unless x.source# && !provide_names.any? {|y|x.name === y}
-
-         x.source.deps.reduce(res.dup) do |r, x|
-            r[x.name] = r[x.name] ? r[x.name].merge(x) : x
-
-            r
-         end
-      end.values
-
-      #TODO move fo filter options
-      provide_names = secondaries.filter_map { |x| x.source&.provide&.name }.uniq
-      filtered = replace_versioning(deps_all).reject do |dep|
-         if dep.is_a?(Gem::Dependency)
-            dep.type == :development && options.devel_dep_setup == :skip || provide_names.include?(dep.name)
-         end
-      end
-
-      reqs =
-         append_versioning(filtered).reject do |n_in|
-            n = n_in.is_a?(Gem::Dependency) && n_in.name || n_in
-            name.eql?(n, true)
-         end
+      dep_hash = value_in.group_by {|x|x.name}.map {|n, x| [n, x.reduce {|res, y| res.merge(y) } ] }.to_h
+ 
+      dep_hash.values | space.dependencies_for(kinds_in: :devel)
    end
 
-   def _build_dependencies_sort value_in
-      value_in.sort
+   def _build_dependencies_filter value_in
+      value_in.select do |dep|
+         !Baltix::DSL.match_kind_dep(dep, :test) 
+      end
+   end
+
+   def _check_dependencies value_in
+      dep_hash = value_in.group_by {|x|x.name}.map {|n, x| [n, x.reduce {|res, y| res.merge(y) } ] }.to_h
+
+      dep_hash.values | space.dependencies_for(kinds_in: :test)
+   end
+
+   def _fix_dependencies_groups value_in
+      state_build_requires_names = state.build_requires&.select {|x| x.is_a?(Gem::Dependency) }&.map {|x| x.name } || []
+
+      value_in.map do |dep|
+         if !options.high_default_dependencies_priority && state_build_requires_names.include?(dep.name)
+            dep.groups -= Baltix::DSL.defined_groups_for(:test)
+
+            dep
+         else
+            Baltix::DSL::DEFAULT_GEM_GROUP.reduce(dep) do |d, (group, names)|
+               names.find {|n| n === d.name } ? (d.groups = [group]; d) : d
+            end
+         end
+      end
+   end
+
+   def _check_dependencies_filter value_in
+      value_in.select do |dep|
+         Baltix::DSL.match_kind_dep(dep, :test)
+      end
    end
 
    def _filter_out_build_auto_requires value_in
@@ -623,11 +654,19 @@ class Baltix::Spec::Rpm
    end
 
    def _build_requires value_in
-      render_deps(build_dependencies) | value_in
+      render_deps(build_dependencies)
+   end
+
+   def _check_requires value_in
+      render_deps(check_dependencies)
    end
 
    def _build_conflicts value_in
       render_deps(build_dependencies, :negate)
+   end
+
+   def _check_conflicts value_in
+      render_deps(check_dependencies, :negate)
    end
 
    def _vcs value_in
@@ -662,9 +701,12 @@ class Baltix::Spec::Rpm
    end
 
    def _licenses value_in
-      list = sources.map do |source|
+      list =
+         sources.map do |source|
             source.licenses
-         end.flatten.uniq
+         end.flatten.uniq.map do |l|
+            Baltix::License.parse(l)
+         end
 
       !list.blank? && list || value_in.blank? && ["Unlicense"] || value_in
    end
@@ -695,50 +737,55 @@ class Baltix::Spec::Rpm
       end
    end
 
+         #aif change_list.any?
    def _changes value_in
       new_change =
-         if of_state(:version)
-            if self.version != of_state(:version)
-               # TODO move to i18n and settings file
-               previous_version = of_state(:version)
-               version = self.version
-               description = Baltix::I18n.t("spec.rpm.change.upgrade", binding: binding)
-               release = "alt1"
-            elsif state_changed?
-               version = self.version
-               description = Baltix::I18n.t("spec.rpm.change.fix", binding: binding)
-               release_version_bump =
-               # TODO suffix
-               /alt(?<release_version>.*)/ =~ of_state(:release)
-               release_version_bump =
-                  if release_version && release_version.split(".").size > 1
-                     Gem::Version.new(release_version).bump.to_s
-                  elsif release_version
-                     release_version + '.1'
-                  else
-                     "1"
-                  end
-               release = "alt" + release_version_bump
-            end
+         if change_list.any?
+            previous_version = of_state(:version)
+            version, release = evr_from_changes
 
-            packager_name = options.maintainer_name || packager.name
-            packager_email = options.maintainer_email || packager.email
             OpenStruct.new(
                date: Date.today.strftime("%a %b %d %Y"),
-               author: packager_name,
-               email: packager_email,
+               author: options.maintainer_name || packager.name,
+               email: options.maintainer_email || packager.email,
                epoch: epoch,
                version: version,
                release: release,
-               description: description
-            )
+               description: descriptions_from_changes(binding))
          end
 
       value_in | [ new_change ].compact
    end
 
+   def descriptions_from_changes b
+      change_list.sort_by {|x| -CHANGES_MAJORITY.keys.index(x) }.map do |ch|
+         Baltix::I18n.t("spec.rpm.change.#{ch}", binding: b)
+      end.join("\n")
+   end
+
+   def evr_from_changes
+      chgs = change_list.map {|c| CHANGES_MAJORITY[c] }.uniq
+
+      if chgs.include?(:new)
+         [self.version, of_state(:release) || of_options(:release) || "alt1"]
+      elsif chgs.include?(:version)
+         [self.version, of_options(:release) || "alt1"]
+      elsif chgs.include?(:major)
+         /alt(?<release_version>.*)/ =~ of_state(:release)
+         release_major_bump = Gem::Version.new(release_version.split(/[\._]/).first).bump.to_s
+
+         [self.version, "alt#{release_major_bump}"]
+      else
+         /alt(?<release_version>.*)/ =~ of_state(:release)
+         parts = release_version.split(/[\._]/)
+         release_minor_bump = Gem::Version.new(parts[1] || "0").bump.to_s
+
+         [self.version, "alt#{parts[0]}.#{release_minor_bump}"]
+      end
+   end
+
    def _release value_in
-      changes.last.release
+      changes.last ? changes.last.release : nil
    end
 
    def _rake_build_tasks value_in
@@ -746,7 +793,6 @@ class Baltix::Spec::Rpm
 
       value_in.split(",") | (of_state(:ruby_on_build_rake_tasks) || list || "").split(",")
    end
-
 
    def initialize state: {}, options: {}, space: nil
       @state = state.to_os

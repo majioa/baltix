@@ -19,23 +19,23 @@ Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
 BuildRequires: racc
 BuildRequires: ragel
+BuildRequires: gem(bundler) >= 1.15
+BuildRequires: gem(racc) >= 1.4.15
+BuildRequires: gem(rake) >= 13.0.1
+BuildConflicts: gem(bundler) >= 3.0.0
+BuildConflicts: gem(racc) >= 2
+BuildConflicts: gem(rake) >= 13.1
 %if_enabled check
 BuildRequires: gem(ast) >= 2.4.1
-BuildRequires: gem(bundler) >= 1.15
 BuildRequires: gem(cliver) >= 0.3.2
 BuildRequires: gem(gauntlet) >= 0
 BuildRequires: gem(kramdown) >= 0
 BuildRequires: gem(minitest) >= 5.10
-BuildRequires: gem(racc) >= 1.4.15
-BuildRequires: gem(rake) >= 13.0.1
 BuildRequires: gem(simplecov) >= 0.15.1
 BuildRequires: gem(yard) >= 0
 BuildConflicts: gem(ast) >= 2.5
-BuildConflicts: gem(bundler) >= 3.0.0
 BuildConflicts: gem(cliver) >= 0.4
 BuildConflicts: gem(minitest) >= 6
-BuildConflicts: gem(racc) >= 2
-BuildConflicts: gem(rake) >= 13.1
 BuildConflicts: gem(simplecov) >= 0.16
 %endif
 
@@ -43,6 +43,7 @@ BuildConflicts: gem(simplecov) >= 0.16
 %add_findprov_skiplist %ruby_gemslibdir/**/*
 %ruby_use_gem_dependency racc >= 1.5.1,racc < 2
 %ruby_alias_names parser,ruby-parse,ruby-rewrite
+Requires:      ruby >= 2.0.0
 Requires:      gem(ast) >= 2.4.1
 Conflicts:     gem(ast) >= 2.5
 Provides:      gem(parser) = 3.0.1.1
@@ -117,19 +118,19 @@ BuildArch:     noarch
 
 Requires:      gem(parser) = 3.0.1.1
 Requires:      gem(bundler) >= 1.15
-Requires:      gem(rake) >= 13.0.1
-Requires:      gem(racc) >= 1.4.15
 Requires:      gem(cliver) >= 0.3.2
-Requires:      gem(yard) >= 0
+Requires:      gem(gauntlet) >= 0
 Requires:      gem(kramdown) >= 0
 Requires:      gem(minitest) >= 5.10
+Requires:      gem(racc) >= 1.4.15
+Requires:      gem(rake) >= 13.0.1
 Requires:      gem(simplecov) >= 0.15.1
-Requires:      gem(gauntlet) >= 0
+Requires:      gem(yard) >= 0
 Conflicts:     gem(bundler) >= 3.0.0
-Conflicts:     gem(rake) >= 13.1
-Conflicts:     gem(racc) >= 2
 Conflicts:     gem(cliver) >= 0.4
 Conflicts:     gem(minitest) >= 6
+Conflicts:     gem(racc) >= 2
+Conflicts:     gem(rake) >= 13.1
 Conflicts:     gem(simplecov) >= 0.16
 
 %description   -n gem-parser-devel
@@ -179,6 +180,7 @@ You can also use unparser to produce equivalent source code from Parser's ASTs.
 %changelog
 * Wed Apr 21 2021 Pavel Skrylev <majioa@altlinux.org> 3.0.1.1-alt1
 - ^ 2.7.2.0 -> 3.0.1.1
+- * define explicit dependencies
 
 * Sun Nov 22 2020 Pavel Skrylev <majioa@altlinux.org> 2.7.2.0-alt1
 - ^ 2.7.1.4 -> 2.7.2.0

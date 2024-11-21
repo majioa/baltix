@@ -1151,6 +1151,8 @@ Feature: Spec actor
                name: !ruby/object:Baltix::Spec::Rpm::Name
                   name: rpm
                   kind: app
+               version: !ruby/object:Gem::Version
+                  version: "20220202"
                changes:
                 - !ruby/object:OpenStruct
                   table:
@@ -1168,6 +1170,7 @@ Feature: Spec actor
                      :version: 2.0
                      :description: "- ^ new version"
          """
+      When developer locks the time to "02.02.2022"
       When developer loads the space
       And he renders the template:
          """
@@ -1539,6 +1542,7 @@ Feature: Spec actor
 
          %add_findreq_skiplist %ruby_gemslibdir/**/*
          %add_findprov_skiplist %ruby_gemslibdir/**/*
+         Requires:      ruby >= 2.2.2
          Provides:      gem(foo_boo) = 5.2
 
          %description
@@ -1565,6 +1569,7 @@ Feature: Spec actor
          %changelog
          * Mon Jan 01 2001 Spec Author <author@example.org> 5.2-alt1
          - + packaged gem with Ruby Policy 2.0
+         - * define explicit dependencies
          """
 
    Scenario: Space gem source with executable, docs, and devel rendering validation
@@ -1683,6 +1688,9 @@ Feature: Spec actor
          BuildRequires(pre): <%= dep %>
          <% end -%>
          <% build_requires.each do |dep| -%>
+         BuildRequires: <%= dep %>
+         <% end -%>
+         <% check_requires.each do |dep| -%>
          BuildRequires: <%= dep %>
          <% end -%>
 
@@ -1805,6 +1813,7 @@ Feature: Spec actor
 
          %add_findreq_skiplist %ruby_gemslibdir/**/*
          %add_findprov_skiplist %ruby_gemslibdir/**/*
+         Requires:      ruby >= 2.2.2
          Requires:      gem(b_oofoo) = 5.2.4.4
          Provides:      gem(foo_boo) = 5.2
 
@@ -1889,6 +1898,7 @@ Feature: Spec actor
          %changelog
          * Mon Jan 01 2001 Spec Author <author@example.org> 5.2-alt1
          - + packaged gem with Ruby Policy 2.0
+         - * define explicit dependencies
          """
 
    Scenario: Space many gem sources render validation
@@ -2090,6 +2100,9 @@ Feature: Spec actor
          <% build_requires.each do |dep| -%>
          BuildRequires: <%= dep %>
          <% end -%>
+         <% check_requires.each do |dep| -%>
+         BuildRequires: <%= dep %>
+         <% end -%>
 
          %add_findreq_skiplist %ruby_gemslibdir/**/*
          %add_findprov_skiplist %ruby_gemslibdir/**/*
@@ -2224,6 +2237,7 @@ Feature: Spec actor
 
          %add_findreq_skiplist %ruby_gemslibdir/**/*
          %add_findprov_skiplist %ruby_gemslibdir/**/*
+         Requires:      ruby >= 2.2.2
          Requires:      gem(b_oofoo) = 5.2.4.4
          Provides:      gem(foo_boo) = 5.2
 
@@ -2235,6 +2249,7 @@ Feature: Spec actor
          Summary:       Foo boo Ext gem
          Group:         Development/Ruby
 
+         Requires:      ruby >= 1.9.3
          Requires:      gem(foo_boo) = 5.2
          Provides:      gem(foo_boo_ext) = 1.1.7
 
@@ -2395,6 +2410,7 @@ Feature: Spec actor
          %changelog
          * Mon Jan 01 2001 Spec Author <author@example.org> 5.2-alt1
          - + packaged gem with Ruby Policy 2.0
+         - * define explicit dependencies
          """
 
    Scenario: Space gem pure source render validation with predefined spec to
@@ -2624,11 +2640,17 @@ Feature: Spec actor
          <% build_pre_requires.each do |dep| -%>
          BuildRequires(pre): <%= dep %>
          <% end -%>
-         <% pure_build_requires.each do |dep| -%>
+         <% build_requires.each do |dep| -%>
          BuildRequires: <%= dep %>
          <% end -%>
-         <% pure_build_conflicts.each do |dep| -%>
+         <% build_conflicts.each do |dep| -%>
+         BuildConflicts: <%= dep %>
+         <% end -%>
+         <% check_requires.each do |dep| -%>
          BuildRequires: <%= dep %>
+         <% end -%>
+         <% check_conflicts.each do |dep| -%>
+         BuildConflicts: <%= dep %>
          <% end -%>
          <% if has_gem_build_requires? || has_gem_build_conflicts? -%>
          <% gem_build_requires.each do |dep| -%>
@@ -2767,15 +2789,19 @@ Feature: Spec actor
 
          %add_findreq_skiplist %ruby_gemslibdir/**/*
          %add_findprov_skiplist %ruby_gemslibdir/**/*
-         Requires:      gem(c) >= 2.0
          Requires:      req >= 1
+         Requires:      gem(d) < 0.1
+         Requires:      gem(e) >= 2
+         Requires:      ruby >= 2.2.2
+         Requires:      gem(c) >= 2.0
          Obsoletes:     req >= 1
          Obsoletes:     gem(p) < 0.1
          Obsoletes:     ruby-foo_boo < %EVR
-         Provides:      ruby-foo_boo = %EVR
          Provides:      req >= 1
          Provides:      gem(p) < 0.1
+         Provides:      ruby-foo_boo = %EVR
          Provides:      gem(foo_boo) = 5.2
+         Conflicts:     gem(g) >= 1
          Conflicts:     gem(c) >= 3
 
          %description
@@ -2868,7 +2894,8 @@ Feature: Spec actor
                            - !ruby/object:Gem::Version
                               version: "2.0.1"
                      type: :development
-                     prerelease: false
+                     platforms: []
+                     groups: ["development"]
                      version_requirements: !ruby/object:Gem::Requirement
                         requirements:
                          - - '>='
@@ -2882,7 +2909,8 @@ Feature: Spec actor
                            - !ruby/object:Gem::Version
                               version: "1.3.0"
                      type: :development
-                     prerelease: false
+                     platforms: []
+                     groups: ["development"]
                      version_requirements: !ruby/object:Gem::Requirement
                         requirements:
                          - - '>='
@@ -2902,10 +2930,16 @@ Feature: Spec actor
       And developer renders the template:
          """
          Name:          <%= name %>
-         <% gem_build_requires.each do |dep| -%>
+         <% build_requires.each do |dep| -%>
          BuildRequires: <%= dep %>
          <% end -%>
-         <% gem_build_conflicts.each do |dep| -%>
+         <% build_conflicts.each do |dep| -%>
+         BuildConflicts: <%= dep %>
+         <% end -%>
+         <% check_requires.each do |dep| -%>
+         BuildRequires: <%= dep %>
+         <% end -%>
+         <% check_conflicts.each do |dep| -%>
          BuildConflicts: <%= dep %>
          <% end -%>
          <% versioned_gem_list.each do |name, req| -%>
@@ -2916,10 +2950,10 @@ Feature: Spec actor
       Then he gets the RPM spec
          """
          Name:          gem-foo-boo
-         BuildRequires: gem(json) >= 1.3.0
          BuildRequires: gem(rake) >= 2.0.1
-         BuildConflicts: gem(json) >= 3
          BuildConflicts: gem(rake) >= 14
+         BuildRequires: gem(json) >= 1.3.0
+         BuildConflicts: gem(json) >= 3
          %ruby_use_gem_dependency rake >= 12.0.1,rake < 14
          %ruby_use_gem_dependency json >= 2.3.1,json < 3
          """

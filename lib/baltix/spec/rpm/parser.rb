@@ -292,7 +292,7 @@ class Baltix::Spec::Rpm::Parser
 
    def parse_dep match, *_
       deps = match[1].scan(/[^\s]+(?:\s+[<=>]+\s+[^\s]+)?/)
-      deps.reject {|d| /^(gem|rubygem|ruby-gem)\(/ =~ d }
+      deps.map {|d| /^(gem|rubygem|ruby-gem)\(([^\)]+)\)/ =~ d ? Gem::Dependency.new($2, Gem::Requirement.new([">= 0"])) : d }
    end
 
    def parse_ignore match, *_

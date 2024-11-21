@@ -19,6 +19,9 @@ module Extensions
             false
          when ::Hash, ::Array
             !self.any?
+         when ::OpenStruct
+           binding.pry
+            !self.to_h.any?
          else
             self.to_s == ""
          end
@@ -52,6 +55,10 @@ module Extensions
    module OpenStruct
       def to_os
          self
+      end
+
+      def blank?
+         !self.to_h.any?
       end
 
       def merge_to other
@@ -458,7 +465,7 @@ module Extensions
                            end
                      end
 
-                  res[0...-1] | prc ? prc.last[ver1, ver2] : [INVALID_DEP]
+                  prc && (res[0...-1] | prc) ? prc.last[ver1, ver2] : [INVALID_DEP]
             end
          end
 
@@ -486,6 +493,50 @@ module Extensions
          self.split('::').reduce(Object) do |c, token|
            token.empty? && c || c.const_get(token)
          end
+      end
+   end
+end
+
+# Forcely replace method/class
+require 'rubygems/dependency_installer.rb'
+module Gem
+   class Dependency
+      class InvalidDependencyNameError < StandardError; end
+
+      alias :orig_merge :merge
+
+      def merge dep_in
+         raise InvalidDependencyNameError if self.name != dep_in.name
+
+         options = {
+            "type" => self.type,
+            "group" => self.groups | dep_in.groups,
+            "platforms" => self.platforms & dep_in.platforms,
+         }
+
+         Bundler::Dependency.new(self.name, orig_merge(dep_in).requirement.expand.merge(dep_in.requirement), options)
+      end
+   end
+
+   class DependencyInstaller
+      class << self
+         def deps
+            @deps ||= []
+         end
+
+         def store dep
+            path = caller[1].scan(/^(.*):(\d+)(?::.*`(.*)')?\Z/).first.first
+
+            deps << [path, dep]
+         end
+
+         def clean
+            @deps = []
+         end
+      end
+
+      def install dep
+         self.class.store(dep)
       end
    end
 end

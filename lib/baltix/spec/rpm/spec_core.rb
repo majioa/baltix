@@ -49,11 +49,15 @@ module Baltix::Spec::Rpm::SpecCore
       method = :copy
       aa = (seq || self.class::STATE[name][:seq]).reduce(nil) do |value_in, func|
        # binding.pry if name == :context
-         /(?<method>[|>])*(?<mname>.*)/ =~ func
+         /(?<method>[\-|>])*(?<mname>.*)/ =~ func
 
          value =
          if mname[0] == "_"
-            send(mname, value_in)
+            if method(mname).arity == 0
+               send(mname)
+            else
+               send(mname, value_in)
+            end
          else
             send(mname, name)
          end
@@ -61,6 +65,8 @@ module Baltix::Spec::Rpm::SpecCore
          case method
          when "|"
             [value_in].compact.flatten(1) | [value].compact.flatten(1)
+         when "-"
+            value_in
          when ">"
             value
          else #||
@@ -130,27 +136,64 @@ module Baltix::Spec::Rpm::SpecCore
 
    protected
 
+   def change_list
+      @change_list ||= []
+   end
+
+   def change key
+      change_list << key
+   end
+
    def _name value_in
       (name, aliases, kind, su) =
          if is_exec?
-            if state.name
-               [ state.name.to_s, executables, self.kind ]
-            elsif executable_name.size >= 3
-               [ executable_name, executables, self.kind ]
+            if doc.space.options.autorender_name && doc.source.is_a?(Baltix::Source::Gem)
+               [ source.name, executables, self.kind ]
             else
-               [ value_in, executables, self.kind ]
+               if state.name
+                  [ state.name.to_s, executables, self.kind ]
+               elsif executable_name.size >= 3
+                  [ executable_name, executables, self.kind ]
+               else
+                  [ value_in, executables, self.kind ]
+               end
             end
          elsif value_in.is_a?(Baltix::Spec::Rpm::Name)
-            if value_in.alias_map[self.kind.to_s]
-               [ value_in.alias_map[self.kind.to_s].first, [], value_in.kind, value_in.support_name ]
+            if source.is_a?(Baltix::Source::Gem)
+               [ source.name, value_in.aliases, value_in.kind, value_in.support_name ]
             else
-               [ value_in.name, value_in.aliases, value_in.kind, value_in.support_name ]
+               if value_in.alias_map[self.kind.to_s]
+                   [ value_in.alias_map[self.kind.to_s].first, [], value_in.kind, value_in.support_name ]
+               else
+                  [ value_in.name, value_in.aliases, value_in.kind, value_in.support_name ]
+               end
             end
          else
             [ value_in, [], self.kind ]
          end
 
       Baltix::Spec::Rpm::Name.parse(name, kind: kind, prefix: options[:name_prefix], aliases: aliases, support_name: su)
+   end
+
+   def _post_name value_in
+      state_name = of_state(:name)&.alias_map&.[](nil)&.first
+
+      change(:rename) if state_name && of_state(:name) != value_in
+      #change(:rename) if state_name && value_in != state_name
+
+      value_in
+   end
+
+   def _post_version value_in
+      case of_state(:version)
+      when value_in
+      when nil
+         change(:new)
+      else
+         change(:upgrade)
+      end
+
+      value_in
    end
 
    def _local_rename value_in
@@ -296,7 +339,7 @@ module Baltix::Spec::Rpm::SpecCore
    end
 
    def _version value_in
-      v=
+      v =
          case value_in
          when Gem::Version
             value_in
@@ -351,11 +394,11 @@ module Baltix::Spec::Rpm::SpecCore
    end
 
    def _requires_plain_only value_in
-      @requires_plain_only ||= value_in&.reject {|dep| dep.match(/gem\((.*)\) ([>=<]+) ([\w\d\.\-]+)/) }
+      @requires_plain_only ||= value_in&.reject {|dep| dep.is_a?(Gem::Dependency) }
    end
 
    def _conflicts_plain_only value_in
-      @conflicts_plain_only ||= value_in&.reject {|dep| dep.match(/gem\((.*)\) ([>=<]+) ([\w\d\.\-]+)/) }
+      @conflicts_plain_only ||= value_in&.reject {|dep| dep.is_a?(Gem::Dependency) }
    end
 
    def _pre_name value_in
@@ -374,32 +417,139 @@ module Baltix::Spec::Rpm::SpecCore
       end
    end
 
-   def _requires value_in
-      deps_pre =
-         if %i(lib app).include?(self.kind)
-            source&.dependencies(:runtime) || []
+   def _requires_ruby value_in
+      value_in |
+         case self.kind
+         when :lib, :app
+            reqs = source.dsl.required_rubies
+
+            if !reqs.blank? && reqs.values.last.requirements.first.last.to_s != "0"
+               [reqs]
+            else
+               []
+            end
          else
-            reqs = self.kind == :devel && devel_requires || []
-
-            [ host.is_app? ? "#{host.name} = #{host.evr}" : provide_dep ].compact | reqs
+            []
          end
-
-      deps = replace_versioning(deps_pre | value_in)
-
-      render_deps(deps)
    end
 
-   def _conflicts value_in
-      deps_pre =
-         if %i(lib app).include?(self.kind)
-            source&.dependencies(:runtime) || []
+   def _conflicts_ruby value_in
+         case self.kind
+         when :lib, :app
+            reqs = source.dsl.required_rubies
+
+            if !reqs.blank? && reqs.values.last.requirements.first.last.to_s != "0"
+               [reqs]
+            else
+               []
+            end
          else
-            reqs = self.kind == :devel && devel_conflicts || []
+            []
          end
+   end
 
-      deps = replace_versioning(deps_pre | value_in)
+   def _requires_rubygems value_in
+      req_rgems =
+         if %i(lib app).include?(kind) && source.dsl.required_rubygems.requirements.last.last.version.to_i > 0
+            ["rubygems #{source.dsl.required_rubygems}"]
+         end || []
 
-      render_deps(deps, :negate)
+      value_in | req_rgems
+   end
+
+   def _host_require value_in
+      unless %i(lib app).include?(self.kind)
+         [ host.is_app? ? "#{doc.name} = #{doc.evr}" : provide_dep ].compact
+      end
+   end
+
+   def _render_bottom_dep value_in
+      render_deps(value_in)
+   end
+
+   def _kind_deps
+      case self.kind
+      when :app
+         space.dependencies_for(kinds_in: :runtime)
+      when :lib
+         runtime_dependencies
+      when :devel
+         if host.is_app?
+            host.space.dependencies_for(kinds_in: :devel)
+         else
+            devel_dependencies
+         end
+      when :exec
+         binary_dependencies
+      else
+         []
+      end
+   end
+
+   def _render_top_dep value_in
+      render_deps(value_in, :negate)
+   end
+
+   def _prepare_dependencies value_in
+      value_in.map do |dep|
+         if m = dep.match(/gem\((.*)\) ([>=<]+) ([\w\d\.\-]+)/)
+            Gem::Dependency.new(m[1], Gem::Requirement.new(["#{m[2]} #{m[3]}"]), :runtime)
+         else
+            dep
+         end
+      end.compact
+   end
+
+   def _dependencies_sort value_in
+      value_in.sort
+   end
+
+   def _replace_versioning_dependencies value_in
+      provide_names = doc.secondaries.filter_map { |x| x.source&.provide&.name }.uniq
+
+      replace_versioning(value_in).reject do |dep|
+         if dep.is_a?(Gem::Dependency)
+            dep.type == :development && options.devel_dep_setup == :skip || provide_names.include?(dep.name)
+         end
+      end
+   end
+
+#   def _append_versioning_dependencies value_in
+#      append_versioning(value_in).reject do |n_in|
+#         n = n_in.is_a?(Gem::Dependency) && n_in.name || n_in
+#
+#         name.eql?(n, true)
+#      end
+#   end
+
+   def _runtime_dependencies value_in
+      dep_hash = value_in.group_by {|x|x.name}.map {|n, x| [n, x.reduce {|res, y| res.merge(y) } ] }.to_h
+
+      source.dsl.all_dependencies_for(kinds_in: :runtime).reduce(dep_hash.dup) do |r, x|
+         r[x.name] = r[x.name] ? r[x.name].merge(x) : x
+
+         r
+      end.values
+   end
+
+   def _devel_dependencies value_in
+      dep_hash = value_in.group_by {|x|x.name}.map {|n, x| [n, x.reduce {|res, y| res.merge(y) } ] }.to_h
+
+      source.dsl.all_dependencies_for(kinds_in: :devel, kinds_out: :runtime).reduce(dep_hash.dup) do |r, x|
+         r[x.name] = r[x.name] ? r[x.name].merge(x) : x
+
+         r
+      end.values
+   end
+
+   def _binary_dependencies value_in
+      dep_hash = value_in.group_by {|x|x.name}.map {|n, x| [n, x.reduce {|res, y| res.merge(y) } ] }.to_h
+
+      source.dsl.all_dependencies_for(kinds_in: :binary).reduce(dep_hash.dup) do |r, x|
+         r[x.name] = r[x.name] ? r[x.name].merge(x) : x
+
+         r
+      end.values
    end
 
    # +replace_versioning+ replaces version of the +external+ libraties to align the any requires.
@@ -460,13 +610,14 @@ module Baltix::Spec::Rpm::SpecCore
                deph = Baltix::Deps.send(func, dep.requirement)
 
                deph.blank? ? [] : ["#{prefix}(#{dep.name}) #{deph.first} #{deph.last}"]
+            elsif dep.is_a?(Hash)
+               dep.map do |name, req|
+                  deph = Baltix::Deps.send(func, req)
+
+                  deph.blank? ? nil : "#{name} #{deph.first} #{deph.last}"
+               end.compact
             else
-               name = Baltix::Spec::Rpm::Name.parse(dep)
-               deps_in.find do |dep_in|
-                  if dep_in.is_a?(Gem::Dependency)
-                     dep_in.name == name.name
-                  end
-               end && [] || [ dep ]
+               [dep]
             end
       end
    end
@@ -476,28 +627,28 @@ module Baltix::Spec::Rpm::SpecCore
 
       name_tmp = source ? Baltix::Spec::Rpm::Name.parse(source.provide.name) : name
       provide_dep_pre = gem_versionings.select {|n,v| name_tmp.eql?(n, true) }.to_h.values.first || source&.provide || space.name
+
       @provide_dep = Gem::Dependency.new(provide_dep_pre.name, version)
    end
 
    def _provides value_in
-      provides =
-         value_in.reduce([]) do |res, o|
-            names.include?(o) ? res : o =~ /^[^\s]+$/ ? res | [o + " = %EVR"] : res | [o]
-         end.compact
+      value_in.reduce([]) do |res, o|
+         n = o.is_a?(Gem::Dependency) ? o.name : o
 
-      provides |
-         case self.kind
-         when :lib
-            render_deps([provide_dep].compact)
-         else
-            []
-         end
+         names.include?(n) ? res : n =~ /^[^\s]+$/ ? res | [n + " = %EVR"] : res | [o]
+      end.compact
    end
 
-   def _find_provides value_in
-      provide = state.name && state.name.original_fullname != name.fullname ? [state.name.original_fullname + " = %EVR"] : []
+   def _post_provides value_in
+      change(:explicit_deps) if value_in.present? && !state.provides
+   end
 
-      provide | value_in
+   def _lib_provide
+      render_deps([provide_dep].compact) if self.kind == :lib
+   end
+
+   def _find_provides
+      state.name && state.name.original_fullname != name.fullname ? [state.name.original_fullname + " = %EVR"] : []
    end
 
    def _obsoletes value_in
@@ -531,14 +682,14 @@ module Baltix::Spec::Rpm::SpecCore
 
    def _filter_out_obsolete value_in
       value_in.reject do |value|
-         !use_gem_obsolete_list.[](value.match(/^(?<name>[^\s]+)/)[:name]).nil?
+        value.is_a?(Gem::Dependency) || !use_gem_obsolete_list.[](value.match(/^(?<name>[^\s]+)/)[:name]).nil?
       end
    end
 
    def dep_list_merge first_in, second_in
       first = first_in || {}.to_os
       second = second_in || {}.to_os
-      a=
+
       first.reduce(second.dup) do |r, name, req|
          if r[name]
             r[name] = r[name].merge(req)
@@ -548,8 +699,6 @@ module Baltix::Spec::Rpm::SpecCore
             r.merge({ name => req }.to_os)
          end
       end
-         #binding.pry
-         a
    end
 
    def dep_list_intersect *lists_in
