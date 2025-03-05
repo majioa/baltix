@@ -21,6 +21,7 @@ class Baltix::CLI
       maintainer_name: nil,
       maintainer_email: nil,
       available_gem_list: {}.to_os.freeze,
+      packager: {}.to_os.freeze,
       devel_dep_baltix: :include,
       use_gem_version_list: {}.to_os.freeze,
       use_gem_obsolete_list: {}.to_os.freeze,
@@ -83,6 +84,14 @@ class Baltix::CLI
 
             opts.on("--maintainer-email=EMAIL", String, "Email of the maintainer to use on spec generation") do |email|
                options.maintainer_email = email
+            end
+
+            opts.on("--packager-name=NAME", String, "Name of the packager to use on spec generation") do |name|
+               options.packager.name = name
+            end
+
+            opts.on("--packager-email=EMAIL", String, "Email of the packager to use on spec generation") do |email|
+               options.packager.email = email
             end
 
             opts.on("--devel-dep-baltix=<TYPE>", %i(include skip), "Apply baltix type for devel dependencies to use with, defaulting to 'include'") do |type|
@@ -174,6 +183,7 @@ class Baltix::CLI
       end
    rescue SystemExit, Interrupt
    rescue Exception => e
+      binding.pry
       error("[#{e.class}]: #{e.message}\n\t#{e.backtrace.join("\n\t")}")
    end
 
