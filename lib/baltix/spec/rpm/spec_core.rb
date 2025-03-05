@@ -2,13 +2,13 @@ require "json"
 
 module Baltix::Spec::Rpm::SpecCore
    URL_MATCHER = {
-      /(?<proto>https?:\/\/)?(?<user>[^\.]+).github.io\/(?<page>[^\/]+)/ => ->(m) do
+      /(?<proto>https?:\/\/)?(?<user>[^\.]+).github.io\/(?<page>[^\/#]+)/ => ->(m) do
          "https://github.com/#{m["user"]}/#{m["page"]}.git"
       end,
-      /(?<proto>https?:\/\/)?bogomips.org\/(?<page>[^\/]+)/ => ->(m) do
+      /(?<proto>https?:\/\/)?bogomips.org\/(?<page>[^\/#]+)/ => ->(m) do
          "https://bogomips.org/#{m["page"]}.git"
       end,
-      /(?<proto>https?:\/\/)?github.com\/(?<user>[^\/]+)\/(?<page>[^\/\.]+)/ => ->(m) do
+      /(?<proto>https?:\/\/)?github.com\/(?<user>[^\/]+)\/(?<page>[^\/\.#]+)/ => ->(m) do
          "https://github.com/#{m["user"]}/#{m["page"]}.git"
       end
    }
@@ -459,7 +459,7 @@ module Baltix::Spec::Rpm::SpecCore
 
    def _host_require value_in
       unless %i(lib app).include?(self.kind)
-         [ host.is_app? ? "#{doc.name} = #{doc.evr}" : provide_dep ].compact
+         [ doc.is_app? ? "#{doc.name} = #{doc.evr}" : provide_dep ].compact
       end
    end
 
@@ -470,12 +470,12 @@ module Baltix::Spec::Rpm::SpecCore
    def _kind_deps
       case self.kind
       when :app
-         space.dependencies_for(kinds_in: :runtime)
+         doc.space.dependencies_for(kinds_in: :runtime)
       when :lib
          runtime_dependencies
       when :devel
-         if host.is_app?
-            host.space.dependencies_for(kinds_in: :devel)
+         if doc.is_app?
+            doc.space.dependencies_for(kinds_in: :devel)
          else
             devel_dependencies
          end
@@ -671,7 +671,7 @@ module Baltix::Spec::Rpm::SpecCore
    def _available_gem_ranges value_in
       available_gem_list.reduce({}.to_os) do |res, name, version_in|
          low = [ version_in ].flatten.map {|v| Gem::Version.new(v) }.min
-         bottom = [ version_in ].flatten.map {|v| Gem::Version.new(v.split(".")[0..1].join(".")).bump }.max
+         bottom = [ version_in ].flatten.map {|v| Gem::Version.new(v.to_s.split(".")[0..1].join(".")).bump }.max
          reqs = [ ">= #{low}", "< #{bottom}" ]
 
          res[name] = Gem::Dependency.new(name.to_s, Gem::Requirement.new(reqs))
