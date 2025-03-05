@@ -358,7 +358,7 @@ class Baltix::DSL
    def merge_in other_dsl
       if original_gemfile.to_s != other_dsl.original_gemfile.to_s
          hodeps = other_dsl.original_deps.map {|dep| [dep.name, dep] }.to_h
-         original_deps.map {|dep| [dep.name, dep] }.to_h.deep_merge(hodeps).values.map do |dep|
+         original_deps.map {|dep| [dep.name, dep] }.to_os.deep_merge(hodeps).to_h.values.map do |dep|
             if dep.is_a?(Array)
                dep.reduce { |res, dep_in| res.merge(dep_in) }
             else
