@@ -182,7 +182,7 @@ class Baltix::Spec::Rpm::Secondary
    def initialize doc: raise, source: nil, host: nil, kind: nil, state: {}, options: {}
       @source = source
       @doc = doc
-      @host = host
+      @host = host || doc
       @kind = kind&.to_sym || self.kind
       @state = state.to_os
       @options = options.to_os
