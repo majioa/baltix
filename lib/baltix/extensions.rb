@@ -11,6 +11,10 @@ module Extensions
          super
       end
 
+      def present?
+         !blank?
+      end
+
       def blank?
          case self
          when ::NilClass, ::FalseClass
@@ -509,12 +513,16 @@ module Gem
          raise InvalidDependencyNameError if self.name != dep_in.name
 
          options = {
-            "type" => self.type,
-            "group" => self.groups | dep_in.groups,
-            "platforms" => self.platforms & dep_in.platforms,
+            "type" => :runtime,
+            "group" => (self.groups || []) | (dep_in.groups || []),
          }
+         if self.respond_to?(:platforms) && dep_in.respond_to?(:platforms)
+            options["platforms"] = self.platforms & dep_in.platforms
+         end
 
          Bundler::Dependency.new(self.name, orig_merge(dep_in).requirement.expand.merge(dep_in.requirement), options)
+      rescue
+        binding.pry
       end
    end
 
