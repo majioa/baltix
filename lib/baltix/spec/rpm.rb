@@ -4,7 +4,7 @@ require 'baltix/spec'
 require 'baltix/i18n'
 
 class Baltix::Spec::Rpm
-   attr_reader :comment, :space
+   attr_reader :comment, :space, :host
 
    %w(Name Parser Secondary SpecCore).reduce({}) do |types, name|
      autoload(:"#{name}", File.dirname(__FILE__) + "/rpm/#{name.snakeize}")
@@ -385,9 +385,9 @@ class Baltix::Spec::Rpm
 
    def source
       @source ||= space&.main_source || sources.find {|source_in| pre_name == source_in.name } || Baltix::Source::Fake.new({
-         "name" => state.name.fullname,
+         "name" => state.name&.fullname,
          "version" => state.version,
-         "kind" => state.kind || state.name.kind,
+         "kind" => state.kind || state.name&.kind,
          "valid" => true})
    end
 
@@ -548,6 +548,7 @@ class Baltix::Spec::Rpm
 
                secs | [Secondary.new(doc: self,
                              kind: sec.name.kind,#an.kind
+                             doc: self,
                              host: host,
                              state: sec,
                              source: source,
