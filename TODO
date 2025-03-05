@@ -83,3 +83,23 @@ uwsgi, aws-s3 проверить гегерацию нового спека
 rubocop-shopify должен генерить без doc пакета
 
 gem-turbolinks-source from oold name ruby-turbolinks-source-gem
+
+
+syntax-tree - multiple versions of the same gem
+wasmtime,redis-client,megatest - strange grouping for gemspec and gemfile, try on pure spec
+redis-client - auto noarch is error
+   
+loofah,rails-html-sanitizer - gems in Gemfile under condition/unknown group
+
+
+rails - requires for gem-rails
+
+
+snowglobe,warnings_logger,addressable,autoprefixer-rails,graphql,packethost,jquery-ui-rails,gitlab-sidekiq-fetcher - erroneouse require list for gem
+byebug - erroneouse devel require list for gem
+gitlab-sidekiq-fetcher - invalid ruby_use_gem_dependency
+packethost - erroneous alias
+
+
+detect release in git - gem-rubocop-github
+detect release by rubygems - gem-minitest-spec-context
