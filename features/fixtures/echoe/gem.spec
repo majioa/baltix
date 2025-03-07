@@ -8,7 +8,7 @@ Name:          gem-ruby-echoe
 Version:       4.6.6
 Release:       alt1
 Summary:       A Rubygems packaging tool that provides Rake tasks for documentation, extension compiling, testing, and deployment
-License:       AFL
+License:       AFL-3.0
 Group:         Development/Ruby
 Packager:      Ruby Maintainers Team <ruby@packages.altlinux.org>
 BuildArch:     noarch

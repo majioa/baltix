@@ -70,7 +70,7 @@ module Baltix::Spec::Rpm::SpecCore
          when ">"
             value
          else #||
-            value_in || value
+            value_in.present? && value_in || value
          end
       end
       # binding.pry if name == :context
@@ -206,7 +206,7 @@ module Baltix::Spec::Rpm::SpecCore
       if host&.source&.kind_of?(Baltix::Source::Gem) && !is_exec?
          value_in.class.parse(value_in, prefix: value_in.class.default_prefix, support_name: value_in.support_name)
       elsif host && (host.source.kind_of?(Baltix::Source::Gemfile) || host.source.kind_of?(Baltix::Source::Rakefile))
-         value_in.class.parse(value_in, support_name: value_in.support_name, name: value_in.support_name.original_fullname)
+         value_in.class.parse(value_in, support_name: value_in.support_name, name: value_in.original_fullname)
       else
          value_in
       end
@@ -370,7 +370,8 @@ module Baltix::Spec::Rpm::SpecCore
          elsif doc
             doc.version # TODO как отличить?
          end
-      elsif host
+      elsif is_aux?
+         # name.support_name == name
          host.version
       else
          v
@@ -383,6 +384,10 @@ module Baltix::Spec::Rpm::SpecCore
 
    def is_host?
       !self.respond_to?(:host)
+   end
+
+   def is_aux?
+      %i(devel doc exec).include?(self.kind)
    end
 
    def _readme _in
@@ -458,8 +463,8 @@ module Baltix::Spec::Rpm::SpecCore
    end
 
    def _host_require value_in
-      unless %i(lib app).include?(self.kind)
-         [ doc.is_app? ? "#{doc.name} = #{doc.evr}" : provide_dep ].compact
+      if is_aux?
+         [ host.is_app? ? "#{host.name} = #{host.evr}" : provide_dep ].compact
       end
    end
 
@@ -474,8 +479,8 @@ module Baltix::Spec::Rpm::SpecCore
       when :lib
          runtime_dependencies
       when :devel
-         if doc.is_app?
-            doc.space.dependencies_for(kinds_in: :devel)
+         if host.is_app?
+            host.space.dependencies_for(kinds_in: :devel)
          else
             devel_dependencies
          end

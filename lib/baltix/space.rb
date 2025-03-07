@@ -45,6 +45,11 @@ class Baltix::Space
    #
    attr_reader :options, :state
 
+   def options= options
+      @options = Baltix::CLI::DEFAULT_OPTIONS.merge(options || {}.to_os)
+   end
+
+
    # +name+ returns a default name of the space with a prefix if any. It returns name of a source when
    # its root is the same as the space's root, or returns name defined in the spec if any.
    # If no spec defined returns name of last folder in rootdir or "root" as a default main source name.
@@ -288,7 +293,7 @@ class Baltix::Space
    end
 
    def initialize state_in: {}.to_os, options: {}.to_os
-      @options = Baltix::CLI::DEFAULT_OPTIONS.merge(options || {}.to_os)
+      self.options = options
       @state = (state_in || {}.to_os)
 
       baltix_log
