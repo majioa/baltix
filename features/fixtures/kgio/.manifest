@@ -1,3 +1,4 @@
+ext/kgio/Makefile
 ext/kgio/extconf.rb
 ext/kgio/kgio.h
 lib/kgio.rb

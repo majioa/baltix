@@ -98,11 +98,12 @@ class Baltix::Source::Base
          name || fullname
       end
 
-      def source_options options_in = {}.to_os
-         source_name = name_for(options_in)
+      def source_options options_in = {}
+         options = options_in.to_os
+         source_name = name_for(options)
 
          opts.map do |name_in, rule|
-            value_in = options_in[name_in.to_s]
+            value_in = options[name_in]
 
             name, value = case rule
                when true
@@ -203,6 +204,12 @@ class Baltix::Source::Base
             append_list: options[:gem_append_list])
    end
 
+   def all_dependencies
+      compilables # NOTE required to collect build deps
+
+      dsl.all_dependencies
+   end
+
    def replace_list
       @gem_version_replace ||= {}
    end
@@ -251,6 +258,17 @@ class Baltix::Source::Base
 
    def valid?
       false
+   end
+
+   # +match_file?+ returns +true+ if provided file is in file list of the source, otherwise returns +false+.
+   def match_file? file
+      if file =~ %r{^/}
+         if file[0...rootdir.size] == rootdir
+            files.include?(file[rootdir.size..-1].split('/').reject {|x| x.blank?}.join('/'))
+         end
+      else
+         files.include?(file)
+      end
    end
 
    def compilable?
@@ -317,7 +335,7 @@ class Baltix::Source::Base
    end
 
    def provide
-      Gem::Dependency.new(name, "= #{version || "0"}")
+      Bundler::Dependency.new(name, "= #{version || "0"}", "group" => [:default])
    end
 
    # +summaries+ returns an open-struct formatted summaries with a default locale as a key
@@ -334,11 +352,7 @@ class Baltix::Source::Base
    end
 
    def dependencies *types
-      if definition
-         definition.dependencies.select {|dep| types.empty? || types.include?(dep.type) }
-      else
-         []
-      end
+      all_dependencies.select {|dep| types.empty? || types.include?(dep.type) }
    end
 
    def development_dependencies

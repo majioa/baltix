@@ -16,9 +16,10 @@ class Baltix::Space
    }
 
    STATES = {
-      invalid: ->(_, source, _) { !source.valid? },
-      disabled: ->(space, source, _) { space.is_disabled?(source) },
-      duplicated: ->(_, _, dup) { dup },
+      invalid: ->(_, source, _, _) { !source.valid? },
+      disabled: ->(space, source, _, _) { space.is_disabled?(source) },
+      obsoleted: ->(_, _, dup, obsoleted) { !dup && obsoleted },
+      duplicated: ->(_, _, dup, _) { dup },
    }
 
    TYPE_CHARS = {
@@ -31,6 +32,7 @@ class Baltix::Space
    STATUS_CHARS = {
       invalid: 'X',
       disabled: '-',
+      obsoleted: '\\',
       duplicated: '=',
       valid: 'V',
    }
@@ -59,7 +61,7 @@ class Baltix::Space
    def name
       return @name if @name
 
-      @name = spec&.name || main_source&.name
+      @name = spec&.name || main_source.name
    end
 
    # +version+ returns a default version for the space. Returns version of a source when
@@ -71,7 +73,7 @@ class Baltix::Space
    def version
       return @version if @version
 
-      @version ||= main_source&.version || spec&.version
+      @version ||= main_source.version || spec&.version
    end
 
    attr_writer :rootdir
@@ -82,7 +84,13 @@ class Baltix::Space
    # rootdir #=> /root/dir/for/the/space
    #
    def rootdir
-      @rootdir ||= read_attribute(:rootdir) || Dir.pwd
+      @rootdir ||=
+         if rootdir = read_attribute(:rootdir)
+            path = Pathname.new(rootdir)
+            path.absolute? ? rootdir : File.join(Dir.pwd, rootdir)
+         else
+            Dir.pwd
+         end
    end
 
    # +main_source+ selects main source from the list of sources when source root dir is the space's one and
@@ -92,13 +100,19 @@ class Baltix::Space
       return @main_source if @main_source
 
       reals = valid_sources.select { |source| !source.is_a?(Baltix::Source::Fake) }
+
       if spec && !spec.state.blank?
          specen_source = reals.find { |real| spec.state["name"] === real.name }
       end
 
       root_source ||= valid_sources.sort {|x, y| x.name.size <=> y.name.size }.find { |source| source.rootdir == rootdir }
+
       @main_source =
          specen_source || root_source.is_a?(Baltix::Source::Fake) && reals.size == 1 && reals.first || root_source
+   end
+
+   def default_fake_source
+      Baltix::Source::Fake.new(source_file: File.join(rootdir, ".fake"))
    end
 
    def time_stamp
@@ -143,14 +157,46 @@ class Baltix::Space
 
    # +dependencies+ returns all the valid source dependencies list as an array of Gem::Dependency
    # objects, otherwise returning blank array.
+#   def dependencies
+#      @dependencies ||= valid_sources.map do |source|
+#         source.respond_to?(:dependencies) && source.dependencies || []
+#      end.flatten.reject do |dep|
+#         match_platform?(dep) || sources.any? do |s|
+#            dep.name == s.name &&
+#            dep.requirement.satisfied_by?(Gem::Version.new(s.version))
+#         end
+#      end
+#   end
+
    def dependencies
-      @dependencies ||= valid_sources.map do |source|
-         source.respond_to?(:dependencies) && source.dependencies || []
-      end.flatten.reject do |dep|
-         match_platform?(dep) || sources.any? do |s|
-            dep.name == s.name &&
-            dep.requirement.satisfied_by?(Gem::Version.new(s.version))
-         end
+      @dependencies ||=
+         valid_sources.reduce({}) do |res, source|
+            source.dsl.all_dependencies.reduce(res) do |r, dep|
+               r.merge(dep.name => r[dep.name] ? r[dep.name].merge(dep) : dep)
+            end
+         end.values.sort_by {|dep| dep.name }
+   end
+
+   def all_dependencies_for kinds_in: [], kinds_out: []
+      groups_out = Baltix::DSL.defined_groups_for(kinds_out)
+      groups_in = Baltix::DSL.defined_groups_for(kinds_in) - groups_out
+
+      valid_sources.reduce([]) do |deps,x|
+         deps_in = x.all_dependencies
+         Baltix::DSL.merge_dependencies(deps, deps_in).sort_by {|x| x.name }
+      end.select do |dep|
+         (dep.groups & groups_in).any? && !(dep.groups & groups_out).any? &&
+         (dep.platforms.blank? || dep.platforms.any? {|p| Baltix::DSL::PLATFORMS[p] })
+      end
+   end
+
+   def dependencies_for kinds_in: [], kinds_out: []
+      groups_out = Baltix::DSL.defined_groups_for(kinds_out)
+      groups_in = Baltix::DSL.defined_groups_for(kinds_in) - groups_out
+
+      dependencies.select do |dep|
+         (dep.groups & groups_in).any? && !(dep.groups & groups_out).any? &&
+         (dep.platforms.blank? || dep.platforms.any? {|p| Baltix::DSL::PLATFORMS[p] })
       end
    end
 
@@ -173,7 +219,7 @@ class Baltix::Space
    end
 
    def compilables
-      @compilables ||= valid_sources.map { |s| s.extensions rescue [] }.flatten.uniq
+      @compilables ||= valid_sources.map { |s| s.compilables rescue [] }.flatten.uniq
    end
 
    # +sources+ returns all the sources in the space. It will load from the space sources,
@@ -195,7 +241,11 @@ class Baltix::Space
 #      end
 #   end
    def valid_sources
-      @valid_sources = stat_sources.map {|(source, status)| status == :valid ? source : nil }.compact
+      @valid_sources ||= begin
+         sources = stat_sources.map {|(source, status)| status == :valid ? source : nil }.compact
+         main = sources.find { |source| source.rootdir == rootdir }
+         main && main.valid? ? sources : sources | [default_fake_source]
+      end
    end
 
 #   def is_regarded? source
@@ -249,26 +299,6 @@ class Baltix::Space
       options.ignored_path_tokens.any? { |t| /\/#{t}\// =~ source.source_file } ||
          options.regarded_names.all? { |i| !i.match?(source.name) } &&
          options.ignored_names.any? { |i| i === source.name }
-   end
-
-   def dependencies
-      @dependencies ||=
-         sources.reduce({}) do |res, source|
-            source.dsl.all_dependencies.reduce(res) do |r, dep|
-               r.merge(dep.name => r[dep.name] ? r[dep.name].merge(dep) : dep)
-            end
-         end.values.sort_by {|dep| dep.name }
-   end
-
-   def dependencies_for kinds_in: [], kinds_out: []
-      groups_out = Baltix::DSL.defined_groups_for(kinds_out)
-      groups_in = Baltix::DSL.defined_groups_for(kinds_in) - groups_out
-
-      #binding.pry if kinds_in.include?(:devel)
-      dependencies.select do |dep|
-         (dep.groups & groups_in).any? && !(dep.groups & groups_out).any? &&
-         (dep.platforms.blank? || dep.platforms.any? {|p| Baltix::DSL::PLATFORMS[p] })
-      end
    end
 
    protected
@@ -328,7 +358,7 @@ class Baltix::Space
       @stat_sources =
          read_attribute(:stat_sources) || Baltix::Source.search_in(rootdir, options).group_by do |x|
             [x.name, x.version].compact.join(":")
-         end.map do |(full_name, v)|
+         end.reduce([[],[]]) do |(r, used_in), (full_name, v)|
             sorten =
                v.sort do |x,y|
                   c0 = ::Baltix::Source.loaders.index(x.loader) <=> ::Baltix::Source.loaders.index(y.loader)
@@ -341,14 +371,16 @@ class Baltix::Space
                end.reduce([[], 0]) do |(res, index), source|
                   dup = source.valid? && index > 0
                   dup_index = source.valid? && index + 1 || index
+                  obs = used_in.include?(source.name)
+                  used_in = used_in | [source.name]
 
-                  [res | [[source, source_status(source, dup)]], dup_index]
+                  [res | [[source, source_status(source, dup, obs)]], dup_index]
                end.first
 
             sorten[1..-1].each { |x| sorten.first.first.alias_to(x.first) }
 
-            sorten
-         end.flatten(1).sort_by {|(x, _)| x.rootdir.size }.each do |(source, status)|
+            [r|[sorten], used_in]
+         end.first.flatten(1).sort_by {|(x, _)| x.rootdir.size }.each do |(source, status)|
             block[source, status] if block_given?
          end
 
@@ -368,9 +400,9 @@ class Baltix::Space
 
    # returns status for the source for the project
    #
-   def source_status source, dup
-      %i(valid duplicated disabled invalid).reduce() do |res, status|
-         STATES[status][self, source, dup] && status || res
+   def source_status source, dup, obs
+      %i(valid duplicated obsoleted disabled invalid).reduce() do |res, status|
+         STATES[status][self, source, dup, obs] && status || res
       end
    end
 

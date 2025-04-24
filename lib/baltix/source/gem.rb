@@ -9,6 +9,7 @@ require 'baltix/loader/pom'
 require 'baltix/loader/rookbook'
 require 'baltix/loader/cmake'
 require 'baltix/loader/mast'
+require 'baltix/loader/extconf'
 require 'baltix/loader/git-version-gen'
 
 class Baltix::Source::Gem < Baltix::Source::Base
@@ -18,6 +19,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
    extend ::Baltix::Loader::Mast
    extend ::Baltix::Loader::Rookbook
    extend ::Baltix::Loader::Cmake
+   extend ::Baltix::Loader::Extconf
    extend ::Baltix::Loader::GitVersionGen
 
    TYPE = 'Gem::Specification'
@@ -46,6 +48,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
       /\/GIT-VERSION-GEN$/ => :git_version_gen,
       /\/(MANIFEST|Manifest.txt)$/ => :manifest,
       /\/(#{Rake::Application::DEFAULT_RAKEFILES.join("|")})$/i => :app_file,
+      /\/extconf.rb$/i => :ext_file,
       /\.gemspec$/i => [:app_file, :yaml],
    }
 
@@ -92,7 +95,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
                [LOADERS[re]].flatten.reduce(nil) do |res, method_name|
                   next res if res
 
-                  result = send(method_name, f)
+                  result = send(method_name, f, dir)
 
                   result && result.objects.any? && [result, method_name]
                end
@@ -130,7 +133,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
    end
 
    def dep
-      Bundler::Dependency.new("#{name}", Gem::Requirement.new(["~> #{version}"]), options: { type: :runtime })
+      Bundler::Dependency.new("#{name}", Gem::Requirement.new(["~> #{version}"]), "type" => :runtime)
    end
 
    def fullname
@@ -264,7 +267,21 @@ class Baltix::Source::Gem < Baltix::Source::Base
    end
 
    def compilables
-      extfiles | spec.extensions
+      @compilables ||=
+         spec.extensions.each do |e|
+            Baltix::Source::Gem.specifics.select {|file,_| match_file?(file) }.map do |_, data_in|
+               deps =
+               data_in[:requires].map do |req|
+                  dsl.dependencies.select {|x|x.name =~ /#{req.gsub(/[\-_\.\/]/, "[\-_\.\/]+")}/}.map do |dep|
+                     Bundler::Dependency.new(dep.name, Gem::Requirement.new(dep.requirement), "group" => :build)
+                  end
+               end.flatten | data_in[:gems].map do |dep|
+                  Bundler::Dependency.new(dep.first.first, Gem::Requirement.new(dep.first.last), "group" => :build)
+               end
+
+               dsl.assign_dependencies(deps)
+            end
+         end.map {|e| File.join(rootdir, e) }
    end
 
    def files kind = nil, &block

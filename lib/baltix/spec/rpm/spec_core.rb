@@ -214,7 +214,7 @@ module Baltix::Spec::Rpm::SpecCore
 
    # returns list of depencecies and devel sources without dep to itself
    def _devel _in = nil
-      dependencies.reject { |x| x.name === source.name } | devel_sources
+      source.all_dependencies.reject { |x| x.name === source.name } | devel_sources
    end
 
    def _devel_sources _in = nil
@@ -475,7 +475,10 @@ module Baltix::Spec::Rpm::SpecCore
    def _kind_deps
       case self.kind
       when :app
-         doc.space.dependencies_for(kinds_in: :runtime)
+         main = doc.space.main_source.dsl.all_dependencies_for(kinds_in: :runtime)
+         depended = doc.space.valid_sources.map {|x| x != doc.space.main_source ? x.provide : nil}.compact
+
+         Baltix::DSL.merge_dependencies(main, depended).sort
       when :lib
          runtime_dependencies
       when :devel
@@ -540,11 +543,13 @@ module Baltix::Spec::Rpm::SpecCore
    def _devel_dependencies value_in
       dep_hash = value_in.group_by {|x|x.name}.map {|n, x| [n, x.reduce {|res, y| res.merge(y) } ] }.to_h
 
-      source.dsl.all_dependencies_for(kinds_in: :devel, kinds_out: :runtime).reduce(dep_hash.dup) do |r, x|
+      a=source.dsl.all_dependencies_for(kinds_in: :devel, kinds_out: :runtime).reduce(dep_hash.dup) do |r, x|
          r[x.name] = r[x.name] ? r[x.name].merge(x) : x
 
          r
       end.values
+     #binding.pry
+     a
    end
 
    def _binary_dependencies value_in

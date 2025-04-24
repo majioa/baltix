@@ -22,6 +22,7 @@ EOF
   s.extensions = %w(ext/kgio/extconf.rb)
 
   s.add_development_dependency('test-unit', '~> 3.0')
+  s.add_development_dependency('ast', '~> 2.0')
   # s.add_development_dependency('strace_me', '~> 1.0') # Linux only
 
   s.licenses = %w(LGPL-2.1+)

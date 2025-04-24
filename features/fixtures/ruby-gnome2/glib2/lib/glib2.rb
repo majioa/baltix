@@ -17,6 +17,7 @@
 require 'pathname'
 require 'English'
 require 'thread'
+require 'mkmf-gnome'
 # require 'glib2/deprecatable'
 
 module GLib

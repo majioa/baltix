@@ -16,10 +16,9 @@ Packager:      Baltix Maintainers Team <baltix@packages.altlinux.org>
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
+%if_enabled check
 BuildRequires: gem(bundler) >= 0
 BuildRequires: gem(rake) >= 0.8.1
-%if_enabled check
-BuildRequires: gem(debase) > 0
 BuildRequires: gem(test-unit) >= 0
 %endif
 
@@ -93,7 +92,6 @@ BuildArch:     noarch
 
 Requires:      gem(ruby-debug-ide) = 0.7.3
 Requires:      gem(bundler) >= 0
-Requires:      gem(debase) > 0
 Requires:      gem(test-unit) >= 0
 Obsoletes:     gem-debug-ide-devel < %EVR
 Provides:      gem-debug-ide-devel = %EVR

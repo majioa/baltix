@@ -19,6 +19,8 @@ Source1:       kgio-2.11.2.gemspec
 BuildRequires(pre): rpm-build-ruby
 BuildRequires: libruby-devel
 BuildRequires: strace
+BuildRequires: gem(ast) >= 2.0
+BuildConflicts: gem(ast) >= 3
 %if_enabled check
 BuildRequires: gem(test-unit) >= 3.0
 BuildConflicts: gem(test-unit) >= 4
@@ -73,7 +75,9 @@ Group:         Development/Ruby
 BuildArch:     noarch
 
 Requires:      gem(kgio) = 2.11.4
+Requires:      gem(ast) >= 2.0
 Requires:      gem(test-unit) >= 3.0
+Conflicts:     gem(ast) >= 3
 Conflicts:     gem(test-unit) >= 4
 
 %description   -n gem-kgio-devel

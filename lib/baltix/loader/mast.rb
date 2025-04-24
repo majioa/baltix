@@ -64,7 +64,7 @@ module Baltix::Loader::Mast
       end
    end
 
-   def manifest file_in
+   def manifest file_in, _dir
       spec = nil
       dir = File.dirname(file_in)
       file1 = File.join(dir, "meta", "package")

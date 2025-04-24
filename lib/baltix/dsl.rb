@@ -6,42 +6,24 @@ require 'baltix'
 
 # DSL service for baltix.
 class Baltix::DSL
+   # default group = binary, devel, test
+   #
    # group to kinds mapping
    GROUP_MAPPING = {
-      default: [:devel, :test, :runtime],
-      integration: [:build, :devel],
-      development: [:build, :devel],
+      default: [:devel, :runtime, :binary, :test],
+      integration: [:devel, :test],
+      development: [:devel, :test],
       test: [:test, :devel],
-      debug: :devel,
+      build: [:build, :devel],
+      debug: [:devel, :test],
       runtime: [:runtime, :test],
       production: [:binary, :runtime],
       true => [:runtime, :binary]
-   }.reduce(Hash.new([:devel])) {|r,(k,v)| r.merge(k => v) }
+   }.reduce(Hash.new([:devel, :test])) {|r,(k,v)| r.merge(k => v) }
 
    PLATFORMS = {
       ruby: true,
       jruby: false
-   }
-
-   DEFAULT_GEM_GROUP = {
-      :test => [
-         /^minitest/, /cucumber/, /^rspec/, /^test-unit/, "test-kitchen", "rack-test", "multi_test", /^codeclimate.*test/,
-         /^guard/, "sunspot_test", /^parallel_/, "buildkite-test_collector", "trailblazer-test", /^ae_/,
-         "fastlane-plugin-test_center", "opentelemetry-test-helpers", "gitlab_quality-test_tooling", /^treye-.*(test|cucumber)/,
-         "puppet-catalog-test", "testdata", "testrbl", /selenium/, "testcentricity_web", /^capybara/, "appium_lib",
-         "awetestlib", /^simplecov/, "busser", "aruba", /rubocop/, "appraisal", /inspec/, "vcr", "gitlab-qa",
-         "turn", "m", /^celluloid/, /faker/, /^danger/, /shoulda/, "crystalball", /^rcov/, "action-cable-testing",
-         "email_spec", /^beaker/, "knapsack", "mail_view", /benchmark/, "approvals", "fakefs", "fivemat", "solano",
-         "equivalent-xml", "generator_spec", "bourne", "optimizely-sdk", "puppetlabs_spec_helper", "xctest_list",
-         "page-object", "slather", "split", "pusher-fake", "webrat", "puffing-billy", /mock/, "derailed_benchmarks", /kitchen/,
-         /^database_cleaner/, "filelock", "parallelized_specs", "luffa", "stub_env", /^teaspoon/, "assert", "capistrano-spec",
-         "flores", "ci_reporter", "testrail-ruby", "serverspec", "ci-queue", "cranky", "ladle", "gimme", "ruby-jmeter", "riot",
-         /^calabash/, "resque_unit", /testing/, "accept_values_for", "temping", /^sauce/, "konacha", "watchr", "fabrication",
-         "fantaskspec", "flights_gui_tests", "cuke_modeler", "axe-matchers", /^autotest/, /^stub/, "scan", "rr", "pwn",
-         "linecook-gem", "robottelo_reporter", "unobtainium", "cornucopia", /rails.*test/, "its", "pdqtest",
-         "webspicy", "expectations", /factory.*bot/, "fake_sqs", "evergreen", "filesystem", "sniff", "html-proofer", "bluff",
-         "bogus", "pact-messages", "sapphire", /jasmine/, "culerity", "fauxhai", /^rufus/, "cobratest", "cypress-rails", "mirage"],
-      :development => [/^bundle/, "native-package-installer", "pkg-config", "racc", /^rake/, "mini_portile2"]
    }
 
    DSL_CONT_EXCEPTIONS = %w(LoadError SyntaxError TypeError Bundler::GemNotFound Bundler::VersionConflict
@@ -158,7 +140,7 @@ class Baltix::DSL
 
    def spec_dependencies
       (spec&.dependencies || []).map do |dep|
-         group_in = DEFAULT_GEM_GROUP.select {|g, list| list.find {|r| r === dep.name }}&.keys&.first || :test
+         group_in = :test
          options = {
             "group" => dep.type == :development ? [group_in] : [:runtime, group_in],
             "platforms" => dep.respond_to?(:platforms) ? dep.platforms : []
@@ -178,7 +160,7 @@ class Baltix::DSL
    end
 
    def all_dependencies
-      dsl.dependencies | spec_dependencies | external_dependencies
+      Baltix::DSL.merge_dependencies(additional_dependencies, external_dependencies, dsl.dependencies, spec_dependencies)
    end
 
    def all_dependencies_for kinds_in: [], kinds_out: []
@@ -244,18 +226,19 @@ class Baltix::DSL
 
       def merge_dependencies *depses
          depses.reduce({}) do |res, deps|
-            deps.reduce(res.dup) do |r, x|
+            deps&.reduce(res.dup) do |r, x|
                r[x.name] =
                   if r[x.name]
                      req = r[x.name].requirement.merge(x.requirement)
+                     group = x.groups | r[x.name].groups
 
-                     r[x.name].class.new(x.name, req, "type" => r[x.name].type)
+                     Bundler::Dependency.new(x.name, req, "type" => r[x.name].type, "group" => group)
                   else
                      x
                   end
 
                r
-            end
+            end || res
          end.values
       end
 
@@ -266,9 +249,9 @@ class Baltix::DSL
 
    def dependencies type = nil
       if type
-         self.class.merge_dependencies(*self.class.filter_dependencies(type, definition.dependencies, spec.dependencies))
+         self.class.merge_dependencies(*self.class.filter_dependencies(type, definition.dependencies, spec&.dependencies))
       else
-         self.class.merge_dependencies(definition.dependencies, spec.dependencies)
+         self.class.merge_dependencies(definition.dependencies, spec&.dependencies)
       end
    end
 
@@ -373,6 +356,14 @@ class Baltix::DSL
       end
 
       self
+   end
+
+   def additional_dependencies
+      @additional_dependencies ||= []
+   end
+
+   def assign_dependencies deps
+      @additional_dependencies = additional_dependencies| deps
    end
 
    protected

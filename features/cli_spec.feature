@@ -20,7 +20,7 @@ Feature: Baltix CLI
       And the default option for "rootdir" is "features/fixtures/psych"
       When developer loads baltix executable
       Then property "ignored_names" of space has "psych"
-      And property "valid_sources" of space is blank
+      And space's valid sources contains not a real "psych" source
       And space's sources has source "psych"
 
 

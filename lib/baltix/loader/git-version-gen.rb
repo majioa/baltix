@@ -2,7 +2,7 @@
 # example: "kgio" gem
 #
 module Baltix::Loader::GitVersionGen
-   def git_version_gen execfile
+   def git_version_gen execfile, _dir
       IO.popen(execfile) do |io|
          debug(io.readlines)
       end

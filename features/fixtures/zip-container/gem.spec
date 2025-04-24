@@ -17,16 +17,16 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-BuildRequires: gem(bundler) >= 0
-BuildRequires: gem(rake) >= 10.1
-BuildConflicts: gem(rake) >= 11
 %if_enabled check
+BuildRequires: gem(bundler) >= 0
 BuildRequires: gem(coveralls) >= 0.8
+BuildRequires: gem(rake) >= 10.1
 BuildRequires: gem(rdoc) >= 4.1
 BuildRequires: gem(rubocop) >= 0.59
 BuildRequires: gem(rubyzip) >= 2.0.0
 BuildRequires: gem(test-unit) >= 3.0
 BuildConflicts: gem(coveralls) >= 1
+BuildConflicts: gem(rake) >= 11
 BuildConflicts: gem(rdoc) >= 5
 BuildConflicts: gem(rubocop) >= 1
 BuildConflicts: gem(rubyzip) >= 2.1

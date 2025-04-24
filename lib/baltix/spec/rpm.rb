@@ -445,7 +445,7 @@ class Baltix::Spec::Rpm
       dep_list = dep_list_intersect(value_in.to_os, available_gem_ranges, gem_versionings)
 
       dep_list.select do |n, dep_in|
-         dependencies.select { |dep| dep.name == n.to_s }.any? do |dep|
+         source.all_dependencies.select { |dep| dep.name == n.to_s }.any? do |dep|
             dep_ver = combine_deps(dep, dep_in)
             dep_ver.requirement.requirements != dep.requirement.expand.requirements
          end
@@ -611,19 +611,20 @@ class Baltix::Spec::Rpm
    def _build_dependencies value_in
       dep_hash = value_in.group_by {|x|x.name}.map {|n, x| [n, x.reduce {|res, y| res.merge(y) } ] }.to_h
  
-      dep_hash.values | space.dependencies_for(kinds_in: :devel)
+      dep_hash.values | space.all_dependencies_for(kinds_in: :build)
    end
 
    def _build_dependencies_filter value_in
+      #binding.pry
       value_in.select do |dep|
-         !Baltix::DSL.match_kind_dep(dep, :test) 
+         Baltix::DSL.match_kind_dep(dep, :build)
       end
    end
 
    def _check_dependencies value_in
       dep_hash = value_in.group_by {|x|x.name}.map {|n, x| [n, x.reduce {|res, y| res.merge(y) } ] }.to_h
 
-      dep_hash.values | space.dependencies_for(kinds_in: :test)
+      dep_hash.values | space.all_dependencies_for(kinds_in: :test)
    end
 
    def _fix_dependencies_groups value_in
@@ -635,16 +636,18 @@ class Baltix::Spec::Rpm
 
             dep
          else
-            Baltix::DSL::DEFAULT_GEM_GROUP.reduce(dep) do |d, (group, names)|
-               names.find {|n| n === d.name } ? (d.groups = [group]; d) : d
-            end
+            dep
+            #Baltix::DSL::DEFAULT_GEM_GROUP.reduce(dep) do |d, (group, names)|
+            #   names.find {|n| n === d.name } ? (d.groups = [group]; d) : d
+            #end
          end
       end
    end
 
    def _check_dependencies_filter value_in
-      value_in.select do |dep|
-         Baltix::DSL.match_kind_dep(dep, :test)
+      #binding.pry
+      value_in.reject do |dep|
+         Baltix::DSL.match_kind_dep(dep, :build)
       end
    end
 

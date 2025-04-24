@@ -1,7 +1,7 @@
 class Baltix::Source::Fake < Baltix::Source::Base
    OPTIONS_IN = {
       source_file: true,
-      valid: true
+      valid: ->(value_in, _source_name) { value_in.nil? ? true : value_in }
    }
 
    def dsl

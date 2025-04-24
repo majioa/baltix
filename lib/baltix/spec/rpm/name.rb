@@ -51,10 +51,14 @@ class Baltix::Spec::Rpm::Name
       end || deep && self.eql_by?(:support_name, other)
    end
 
+   # equality
+   # https://stackoverflow.com/a/3422349/446267
    def == other
-      eql?(other)
+      eql?(other) || __id__ == other.__id__
    end
 
+   # match operator
+   # https://stackoverflow.com/a/3422349/446267
    def === other
       eql?(other)
    end

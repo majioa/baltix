@@ -2950,10 +2950,10 @@ Feature: Spec actor
       Then he gets the RPM spec
          """
          Name:          gem-foo-boo
-         BuildRequires: gem(rake) >= 2.0.1
-         BuildConflicts: gem(rake) >= 14
          BuildRequires: gem(json) >= 1.3.0
+         BuildRequires: gem(rake) >= 2.0.1
          BuildConflicts: gem(json) >= 3
+         BuildConflicts: gem(rake) >= 14
          %ruby_use_gem_dependency rake >= 12.0.1,rake < 14
          %ruby_use_gem_dependency json >= 2.3.1,json < 3
          """

@@ -17,14 +17,12 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-BuildRequires: gem(rake) >= 0
 %if_enabled check
 BuildRequires: gem(ansi) >= 0
-BuildRequires: gem(bones) >= 3.7.1
-BuildRequires: gem(bones-git) >= 1.2.4
 BuildRequires: gem(indexer) >= 0
 BuildRequires: gem(mast) >= 0
 BuildRequires: gem(minitest) >= 4
+BuildRequires: gem(rake) >= 0
 BuildConflicts: gem(minitest) >= 6
 %endif
 

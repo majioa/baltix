@@ -17,19 +17,19 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-BuildRequires: gem(rake) >= 10.5
-BuildConflicts: gem(rake) >= 16
 %if_enabled check
 BuildRequires: gem(builder) >= 3.0
 BuildRequires: gem(json) >= 1.8
 BuildRequires: gem(nokogiri) >= 1.5
 BuildRequires: gem(optimist) >= 3.0
+BuildRequires: gem(rake) >= 10.5
 BuildRequires: gem(simplecov) >= 0.12.0
 BuildRequires: gem(test-unit) >= 2.5
 BuildRequires: gem(yard) >= 0.9.5
 BuildConflicts: gem(builder) >= 4
 BuildConflicts: gem(nokogiri) >= 2
 BuildConflicts: gem(optimist) >= 4
+BuildConflicts: gem(rake) >= 16
 BuildConflicts: gem(simplecov) >= 0.13
 BuildConflicts: gem(yard) >= 0.10
 %endif

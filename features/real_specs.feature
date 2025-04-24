@@ -3,6 +3,9 @@ Feature: Spec actor
 
    @policy1_0 @gem_change @main_is_gem
    Scenario: Apply the Spec actor to setup for ucf gem and old Ruby Policy 1.0 setup
+      - blank packager
+      - both gem dependencies are runtime and development
+      - there is a dependency to ruby
       Given blank space
       And a spec from fixture "ucf"
       When developer locks the time to "21.04.2021"
@@ -15,6 +18,9 @@ Feature: Spec actor
 
    @policy1_0 @gem_change @gem_obsolete_list @main_is_gem
    Scenario: Apply the Spec actor to setup for zip-container gem and old Ruby Policy 1.0 setup
+      - blank packager
+      - both gem dependencies are runtime and development
+      - there is a dependency to ruby
       Given blank space
       And a spec from fixture "zip-container"
       When developer locks the time to "21.04.2021"
@@ -32,6 +38,9 @@ Feature: Spec actor
    Scenario: Apply the Spec actor to setup for kgio gem with Olddoc/Wrongdoc specification
          and old Ruby Policy 1.0 setup, where root main source is a gem so it doesnt parse
          the the prefix, and suffix, and just use a default in output spec
+      - blank packager
+      - gem dependencies are development only
+      - has extension containing call to #gem dep
       Given blank space
       And a spec from fixture "kgio"
       When developer locks the time to "21.04.2021"
@@ -47,6 +56,9 @@ Feature: Spec actor
    @policy2_0 @gem_change @main_is_gem
    Scenario: Apply the Spec actor to setup for rbvmomi gem and manual Ruby Policy 2.0 setup
          with optimize available gem list feature
+      - blank packager
+      - both gem dependencies are runtime and development
+      - there is a dependency to ruby
       Given blank space
       And a spec from fixture "rbvmomi"
       When developer locks the time to "21.04.2021"
@@ -63,6 +75,8 @@ Feature: Spec actor
    @policy2_0 @release_change @main_is_gem
    Scenario: Apply the Spec actor to setup for rspec-support gem and manual Ruby Policy 2.0 setup
          with no gem version upgrade and skipping devel package
+      - blank packager
+      - "more than" condition dependency for gem
       Given blank space
       And a spec from fixture "rspec-support"
       When developer locks the time to "21.04.2021"
@@ -79,6 +93,7 @@ Feature: Spec actor
    @policy2_0 @gem_change @main_is_gem
    Scenario: Apply the Spec actor to setup for parser gem and manual Ruby Policy 2.0 setup
          with no gem version upgrade
+      - blank packager
       Given blank space
       And a spec from fixture "parser"
       When developer locks the time to "21.04.2021"
@@ -94,8 +109,10 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "parser" fixture spec for the baltix setup
 
-   @scratch @index_gemspec
+   @scratch @index_gemspec @blank_setup
    Scenario: Apply the Spec actor to setup for turn gem to blank setup
+      - blank setup
+      - blank packager
       Given blank space
       When developer locks the time to "21.04.2021"
       And he sets the space options as:
@@ -115,6 +132,7 @@ Feature: Spec actor
       - proper detection of host rpm name line ruby-gnome2 not to rename to gem-gnome2
       - autoskip packages when they lost gemspecs like ruby-gnome2 *-no-gi packages or gem-vte defined in the original spec
       - since the top source is an application / group, so it doesn't parse a prefix, and use no prefix then
+      - blank packager
       Given blank space
       And a spec from fixture "ruby-gnome2"
       When developer locks the time to "09.03.2022"
@@ -130,8 +148,9 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "ruby-gnome2" fixture spec for the baltix setup
 
-   @scratch @hoe
+   @scratch @hoe @blank_setup
    Scenario: Apply the Spec actor to setup for oedipus-lex gem to blank setup
+      - blank setup
       Given blank space
       When developer locks the time to "21.04.2021"
       And he sets the space options as:
@@ -145,8 +164,9 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "oedipus-lex" fixture spec for the baltix setup
 
-   @scratch @bones
+   @scratch @bones @blank_setup
    Scenario: Apply the Spec actor to setup for little-plugger gem to blank setup
+      - blank setup
       Given blank space
       When developer locks the time to "21.04.2021"
       And he sets the space options as:
@@ -160,8 +180,9 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "little-plugger" fixture spec for the baltix setup
 
-   @scratch @jeweler
+   @scratch @jeweler @blank_setup
    Scenario: Apply the Spec actor to setup for polyglot gem to blank setup
+      - blank setup
       Given blank space
       When developer locks the time to "21.04.2021"
       And he sets the space options as:
@@ -175,8 +196,11 @@ Feature: Spec actor
       And he applies "spec" actor to the baltix setup
       Then he acquires an "polyglot" fixture spec for the baltix setup
 
-   @scratch @echoe
+   @scratch @echoe @dep_rubygems @dep_runtime
    Scenario: Apply the Spec actor to setup for echoe gem to blank setup
+      - blank setup
+      - all gem dependencies are runtime
+      - there is a dependency to rubygems
       Given blank space
       When developer locks the time to "21.04.2021"
       And he sets the space options as:
@@ -194,7 +218,7 @@ Feature: Spec actor
    Scenario: Apply the Spec actor to setup for ruby-debug-ide gem and Ruby Policy 2.0 setup
       - rename to proper name defined by gem spec
       - use baltix team as packager
-      - filter out gems not required by an allowed (currently ruby) platform
+      - filter out gems (debase) not required by an allowed (currently ruby) platform
       - separate the test and developent gem groups
       - detect required gems for check and build spaces separately
         in gemfile and ext using gem_install_dependencies

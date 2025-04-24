@@ -39,6 +39,11 @@ Then('space\'s valid sources are blank') do
    expect(space.valid_sources).to be_blank
 end
 
+Then("space's valid sources contains not a real {string} source") do |name|
+   source_names = space.valid_sources.reject {|x| x.is_a?(Baltix::Source::Fake)}.map {|x| x.name }
+   expect(source_names).to_not include(name)
+end
+
 Then('property {string} of space is blank') do |property|
    expect(space.send(property)).to be_blank
 end

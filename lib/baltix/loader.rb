@@ -15,7 +15,27 @@ module Baltix::Loader
       alias_method :require_orig, :require
 
       def require path, *args
-         require_orig(path, *args)
+         paths = $:.map {|x| patha = (x =~ /^\// ? x : File.join(Dir.pwd, x)) }.map {|p| File.expand_path(File.join(p, path + "*")) }
+         files = paths.map {|x| Dir[x] }.flatten.uniq.select {|x| x =~ %r{#{@dir}}}
+
+         @requires.push(path)
+         if files.empty?
+            require_orig(path, *args)
+         else
+            file = files.first
+            _file = File.basename(file)
+            code = File.read(file, mode: 'r:UTF-8:-')
+            if @stack.include?(file)
+               return false
+            else
+               begin
+                  @stack.push(file)
+                  instance_eval(code, _file)
+               ensure
+                  @stack.pop
+               end
+            end
+         end
       rescue LoadError
          unless File.absolute_path?(path)
             begin
@@ -24,6 +44,26 @@ module Baltix::Loader
             rescue LoadError
             end
          end
+
+         true
+      #rescue Exception
+      #  binding.pry
+      end
+
+      def method_missing name, *parms, **parmh
+         execs = self.instance_variables.include?(:@execs) ? self.instance_variable_get(:@execs) : []
+         execs << [name, parms, parmh]
+
+         self.instance_variable_set(:@execs, execs)
+      end
+
+      #alias_method :orig_gem, :gem
+      #define_method :gem do |*args|
+      def gem name, *args
+         gems = self.instance_variables.include?(:@gems) ? self.instance_variable_get(:@gems) : []
+
+         gems.concat([name => args])
+         self.instance_variable_set(:@gems, gems)
 
          true
       end
@@ -51,10 +91,13 @@ module Baltix::Loader
          @object_hash = object_hash
       end
 
-      def load_file file, type_hash
+      def load_file file, dir, type_hash
          # NOTE this forces not to share namespace but avoid exception when calling
          # main space methods, see Rakefile of racc gem
          # also named module is required instead of anonymous one to allow root level defined methods access
+         @dir = dir
+         @stack = []
+         @requires = []
          store_object_hash(type_hash)
          value = nil
 
@@ -69,10 +112,15 @@ module Baltix::Loader
                      # evaluation required not to lost loaded object,
                      # the instance_eval is used in favor of eval to avoid lost predefined vars
                      # like for chef-utils gem
+                     stderr = $stderr.dup
+                     stdout = $stdout.dup
                      instance_eval(code, _file)
-                  rescue Exception
+                  rescue Exception => e
                      # thrown for setup gem
                      load(File.basename(file), true)
+                  ensure
+                     $stderr = stderr
+                     $stdout = stdout
                   end
             end
          rescue Exception => e
@@ -143,11 +191,13 @@ module Baltix::Loader
       @@mods ||= {}
    end
 
-   def load_file file
+   def load_file file, dir
       debug("Loading file: #{file}")
       stdout = $stdout
       stderr = $stderr
-      $stdout = $stderr = Tempfile.new('loader')
+
+      tmpio = Tempfile.new('loader')
+      $stdout = $stderr = tmpio.dup
 
       pre_loaders.each do |(m, preload_method)|
          if file =~ m
@@ -164,29 +214,29 @@ module Baltix::Loader
       END
 
       mod = module_eval(mod_code)
-      mod.load_file(file, type_hash)
-      $stdout.rewind
-      $stderr.rewind
-      log = $stdout.readlines
-      errlog = $stderr.readlines
+      mod.load_file(file, dir, type_hash)
+      tmpio.rewind
 
-      OpenStruct.new(mod: mod, log: log, errlog: errlog, object_hash: mod.object_hash, diff_ids: mod.object_ids)
+      res = OpenStruct.new(mod: mod, log: tmpio.readlines, errlog: tmpio.readlines)
+      mod.instance_variables.map {|x| x[1..-1] }.reduce(res) do |r, name|
+         r.merge({name => mod.instance_variable_get("@#{name}")})
+      end
    rescue Exception => e
       warn(e.message)
 
-      OpenStruct.new(mod: mod, object_hash: {}, log: log, errlog: errlog, diff_ids: [])
+      OpenStruct.new(mod: mod, object_hash: {}, log: tmpio.readlines, errlog: tmpio.readlines, object_ids: [])
    ensure
       $stderr = stderr
       $stdout = stdout
    end
 
-   def app_file file, &block
-      mods[file] ||= load_file(file)
+   def app_file file, dir = Dir.pwd, &block
+      mods[file] ||= load_file(file, dir)
 
       mod = mods[file].dup
-      objects = mod.diff_ids[self]&.map {|id| ObjectSpace._id2ref(id) }
+      objects = mod.object_ids[self]&.map {|id| ObjectSpace._id2ref(id) }
 
-      debug("Object ids for '#{file}' are: #{mod.diff_ids[self].inspect}")
+      debug("Object ids for '#{file}' are: #{mod.object_ids[self].inspect}")
       debug("Objects for '#{file}' are: #{objects.inspect}")
 
       if block_given?

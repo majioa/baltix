@@ -15,9 +15,9 @@ BuildArch:     noarch
 
 Source:        %name-%version.tar
 BuildRequires(pre): rpm-build-ruby
-BuildRequires: gem(rake) >= 0.9.2
 %if_enabled check
 BuildRequires: gem(allison) >= 2.0.3
+BuildRequires: gem(rake) >= 0.9.2
 BuildRequires: gem(rdoc) >= 2.5.11
 BuildRequires: gem(rubyforge) >= 2.0.4
 %endif
