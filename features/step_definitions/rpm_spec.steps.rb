@@ -13,8 +13,16 @@ When(/(?:he|developer) loads the spec into the space/) do
    space.spec = spec
 end
 
-When(/(?:he|developer) sets the space option "([^"]*)" to "([^"]*)"/) do |option, value|
-   space.options[option] = value
+When(/(?:he|developer) sets the space option "([^"]*)" to "([^"]*)"/) do |name, value|
+   names = name.split(".")
+   o = names[0...-1].reduce(space.options) {|os_, x| os_[x].nil? ? os_[x] = {}.to_os : os_[x].frozen? ? os_[x] = os_[x].dup : os_[x] }
+   o[names.last] = adopt_value(value)
+end
+
+When('developer sets the cli option {string} to blank') do |name|
+   names = name.split(".")
+   o = names[0...-1].reduce(cli.options) {|os_, x| os_[x].nil? ? os_[x] = {}.to_os : os_[x].frozen? ? os_[x] = os_[x].dup : os_[x] }
+   o[names.last] = nil
 end
 
 Then('property {string} of space is {string}') do |property, value|

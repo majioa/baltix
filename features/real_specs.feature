@@ -10,8 +10,8 @@ Feature: Spec actor
       And a spec from fixture "ucf"
       When developer locks the time to "21.04.2021"
       And he sets the space option "rootdir" to fixture "ucf"
-      And he sets the space option "maintainer_name" to "Pavel Skrylev"
-      And he sets the space option "maintainer_email" to "majioa@altlinux.org"
+      And he sets the space option "maintainer.name" to "Pavel Skrylev"
+      And he sets the space option "maintainer.email" to "majioa@altlinux.org"
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
       Then he acquires an "ucf" fixture spec for the baltix setup
@@ -28,8 +28,8 @@ Feature: Spec actor
          | options               | value                                         |
          | rootdir               | features/fixtures/zip-container               |
          | use_gem_obsolete_list | {rubyzip: rubyzip}                            |
-         | maintainer_name       | Pavel Skrylev                                 |
-         | maintainer_email      | majioa@altlinux.org                           |
+         | maintainer.name       | Pavel Skrylev                                 |
+         | maintainer.email      | majioa@altlinux.org                           |
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
       Then he acquires an "zip-container" fixture spec for the baltix setup
@@ -47,8 +47,8 @@ Feature: Spec actor
       And he sets the space options as:
          | options               | value                                         |
          | rootdir               | features/fixtures/kgio                        |
-         | maintainer_name       | Pavel Skrylev                                 |
-         | maintainer_email      | majioa@altlinux.org                           |
+         | maintainer.name       | Pavel Skrylev                                 |
+         | maintainer.email      | majioa@altlinux.org                           |
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
       Then he acquires an "kgio" fixture spec for the baltix setup
@@ -66,8 +66,8 @@ Feature: Spec actor
          | options            | value                                         |
          | rootdir            | features/fixtures/rbvmomi                     |
          | available_gem_list | {racc: 1.5.1, rake: '15.0', test-unit: '3.0'} |
-         | maintainer_name    | Pavel Skrylev                                 |
-         | maintainer_email   | majioa@altlinux.org                           |
+         | maintainer.name    | Pavel Skrylev                                 |
+         | maintainer.email   | majioa@altlinux.org                           |
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
       Then he acquires an "rbvmomi" fixture spec for the baltix setup
@@ -84,8 +84,8 @@ Feature: Spec actor
          | options            | value                             |
          | rootdir            | features/fixtures/rspec-support   |
          | devel_dep_setup    | :skip                             |
-         | maintainer_name    | Pavel Skrylev                     |
-         | maintainer_email   | majioa@altlinux.org               |
+         | maintainer.name    | Pavel Skrylev                     |
+         | maintainer.email   | majioa@altlinux.org               |
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
       Then he acquires an "rspec-support" fixture spec for the baltix setup
@@ -102,8 +102,8 @@ Feature: Spec actor
          | rootdir                              | features/fixtures/parser |
          | available_gem_list                   | {racc: 1.5.1}            |
          | use_gem_version_list                 | parser:3.0.1.1           |
-         | maintainer_name                      | Pavel Skrylev            |
-         | maintainer_email                     | majioa@altlinux.org      |
+         | maintainer.name                      | Pavel Skrylev            |
+         | maintainer.email                     | majioa@altlinux.org      |
          | high_default_dependencies_priority   | true                     |
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
@@ -120,8 +120,8 @@ Feature: Spec actor
          | rootdir               | features/fixtures/turn            |
          | available_gem_list    | {minitest: 5.14.0}                |
          | spec_type             | rpm                               |
-         | maintainer_name       | Pavel Skrylev                     |
-         | maintainer_email      | majioa@altlinux.org               |
+         | maintainer.name       | Pavel Skrylev                     |
+         | maintainer.email      | majioa@altlinux.org               |
       And he applies "spec" actor to the baltix setup
       Then he acquires an "turn" fixture spec for the baltix setup
 
@@ -142,8 +142,8 @@ Feature: Spec actor
          | available_gem_list    | {minitest: 5.14.0}                |
          | spec_type             | rpm                               |
          | ignored_names         | [rake]                            |
-         | maintainer_name       | Pavel Skrylev                     |
-         | maintainer_email      | majioa@altlinux.org               |
+         | maintainer.name       | Pavel Skrylev                     |
+         | maintainer.email      | majioa@altlinux.org               |
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
       Then he acquires an "ruby-gnome2" fixture spec for the baltix setup
@@ -159,8 +159,8 @@ Feature: Spec actor
          | packager.email        | ruby@packages.altlinux.org        |
          | rootdir               | features/fixtures/oedipus-lex     |
          | spec_type             | rpm                               |
-         | maintainer_name       | Pavel Skrylev                     |
-         | maintainer_email      | majioa@altlinux.org               |
+         | maintainer.name       | Pavel Skrylev                     |
+         | maintainer.email      | majioa@altlinux.org               |
       And he applies "spec" actor to the baltix setup
       Then he acquires an "oedipus-lex" fixture spec for the baltix setup
 
@@ -175,8 +175,8 @@ Feature: Spec actor
          | packager.email        | ruby@packages.altlinux.org        |
          | rootdir               | features/fixtures/little-plugger  |
          | spec_type             | rpm                               |
-         | maintainer_name       | Pavel Skrylev                     |
-         | maintainer_email      | majioa@altlinux.org               |
+         | maintainer.name       | Pavel Skrylev                     |
+         | maintainer.email      | majioa@altlinux.org               |
       And he applies "spec" actor to the baltix setup
       Then he acquires an "little-plugger" fixture spec for the baltix setup
 
@@ -191,8 +191,8 @@ Feature: Spec actor
          | packager.email        | ruby@packages.altlinux.org        |
          | rootdir               | features/fixtures/polyglot        |
          | spec_type             | rpm                               |
-         | maintainer_name       | Pavel Skrylev                     |
-         | maintainer_email      | majioa@altlinux.org               |
+         | maintainer.name       | Pavel Skrylev                     |
+         | maintainer.email      | majioa@altlinux.org               |
       And he applies "spec" actor to the baltix setup
       Then he acquires an "polyglot" fixture spec for the baltix setup
 
@@ -209,8 +209,8 @@ Feature: Spec actor
          | packager.email        | ruby@packages.altlinux.org        |
          | rootdir               | features/fixtures/echoe           |
          | spec_type             | rpm                               |
-         | maintainer_name       | Pavel Skrylev                     |
-         | maintainer_email      | majioa@altlinux.org               |
+         | maintainer.name       | Pavel Skrylev                     |
+         | maintainer.email      | majioa@altlinux.org               |
       And he applies "spec" actor to the baltix setup
       Then he acquires an "echoe" fixture spec for the baltix setup
 
@@ -235,8 +235,8 @@ Feature: Spec actor
          | packager.name         | Baltix Maintainers Team           |
          | packager.email        | baltix@packages.altlinux.org      |
          | autorender_name       | true                              |
-         | maintainer_name       | Baltix Builder Bot                |
-         | maintainer_email      | bbb@altlinux.org                  |
+         | maintainer.name       | Baltix Builder Bot                |
+         | maintainer.email      | bbb@altlinux.org                  |
       And he loads the spec into the space
       And he applies "spec" actor to the baltix setup
       Then he acquires an "ruby-debug-ide" fixture spec for the baltix setup

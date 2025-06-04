@@ -10,7 +10,7 @@ class Baltix::Spec::Rpm
      autoload(:"#{name}", File.dirname(__FILE__) + "/rpm/#{name.snakeize}")
    end
 
-   OPTIONS = %w(source conflicts uri vcs maintainer_name maintainer_email
+   OPTIONS = %w(source conflicts uri vcs maintainer
                 source_files patches build_pre_requires context comment
                 readme executables ignored_names main_source dependencies
                 valid_sources available_gem_list rootdir aliased_names
@@ -104,8 +104,8 @@ class Baltix::Spec::Rpm
          seq: %w(of_options of_state),
          default: ->(this) do
             OpenStruct.new(
-               name: this.options.maintainer_name || "Spec Author",
-               email: this.options.maintainer_email || "author@example.org"
+               name: this.options.maintainer&.name || "Spec Author",
+               email: this.options.maintainer&.email || "author@example.org"
             )
          end
       },
@@ -113,8 +113,8 @@ class Baltix::Spec::Rpm
          seq: %w(of_options of_state),
          default: ->(this) do
             OpenStruct.new(
-               name: this.options.maintainer_name || "Spec Author",
-               email: this.options.maintainer_email || "author@example.org"
+               name: this.options.maintainer&.name || "Spec Author",
+               email: this.options.maintainer&.email || "author@example.org"
             )
          end
       },
@@ -750,8 +750,8 @@ class Baltix::Spec::Rpm
 
             OpenStruct.new(
                date: Date.today.strftime("%a %b %d %Y"),
-               author: options.maintainer_name || packager.name,
-               email: options.maintainer_email || packager.email,
+               author: options.maintainer&.name || packager.name,
+               email: options.maintainer&.email || packager.email,
                epoch: epoch,
                version: version,
                release: release,

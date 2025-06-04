@@ -101,6 +101,7 @@ Feature: RPM Spec
          Name:                rpm
          Packager:            Packer FIO <fio@example.com>
          """
+      And developer sets the cli option "packager" to blank
       When developer loads the spec
       And developer sets the space option "rootdir" to "features/fixtures/blank"
       Then space's property "packager" with argument "name" has text:

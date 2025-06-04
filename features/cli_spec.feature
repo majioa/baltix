@@ -73,10 +73,10 @@ Feature: Baltix CLI
          --maintainer-name="Pavel Skrylev" --maintainer-email=majioa@altlinux.org
          """
       When developer loads baltix executable
-      Then space's options "maintainer_name" is "Pavel Skrylev"
-      And space's options "maintainer_email" is "majioa@altlinux.org"
-      And property "maintainer_name" of options is "Pavel Skrylev"
-      And property "maintainer_email" of options is "majioa@altlinux.org"
+      Then space's options "maintainer.name" is "Pavel Skrylev"
+      And space's options "maintainer.email" is "majioa@altlinux.org"
+      And property "maintainer.name" of options is "Pavel Skrylev"
+      And property "maintainer.email" of options is "majioa@altlinux.org"
 
    Scenario: Baltix CLI maintainer metadata validation
       Given blank baltix CLI

@@ -7,7 +7,7 @@ module Lib
 
    def cli
       @cli ||= Baltix::CLI.new
-      @cli.option_parser.default_argv << '--verbose=info'
+      @cli.option_parser('--verbose=info')
       @cli
    end
 

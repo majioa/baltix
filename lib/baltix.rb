@@ -22,6 +22,10 @@ module Baltix
          @main ||= TOPLEVEL_BINDING.eval('self')
       end
 
+      def load_file file
+         Baltix.load(IO.read(file))
+      end
+
       def load string
          if Gem::Version.new(Psych::VERSION) >= Gem::Version.new("4.0.0")
             YAML.load(string,

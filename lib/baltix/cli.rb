@@ -18,9 +18,8 @@ class Baltix::CLI
       aliased_names: [].freeze,
       ignored_path_tokens: [].freeze,
       spec_file: nil,
-      maintainer_name: nil,
-      maintainer_email: nil,
       available_gem_list: {}.to_os.freeze,
+      maintainer: {}.to_os.freeze,
       packager: {}.to_os.freeze,
       devel_dep_baltix: :include,
       use_gem_version_list: {}.to_os.freeze,
@@ -35,7 +34,7 @@ class Baltix::CLI
       skip_platforms: %i(jruby).freeze
    }.to_os.freeze
 
-   def option_parser
+   def option_parser *default_argv
       @option_parser ||=
          OptionParser.new do |opts|
             opts.banner = "Usage: baltix.rb [options & actions]"
@@ -79,11 +78,11 @@ class Baltix::CLI
             end
 
             opts.on("--maintainer-name=NAME", String, "Name of the maintainer to use on spec generation") do |name|
-               options.maintainer_name = name
+               options.maintainer.name = name
             end
 
             opts.on("--maintainer-email=EMAIL", String, "Email of the maintainer to use on spec generation") do |email|
-               options.maintainer_email = email
+               options.maintainer.email = email
             end
 
             opts.on("--packager-name=NAME", String, "Name of the packager to use on spec generation") do |name|
@@ -136,15 +135,31 @@ class Baltix::CLI
 
       if @argv
          @option_parser.default_argv.replace(@argv)
-      elsif @option_parser.default_argv.empty?
-         @option_parser.default_argv << "-h"
+      else
+         unless default_argv.empty?
+            @option_parser.default_argv |= default_argv
+         end
+
+         if @option_parser.default_argv.empty?
+            @option_parser.default_argv << "-h"
+         end
       end
 
       @option_parser
    end
 
+   def default_options
+      file = File.join(ENV["HOME"], ".baltix.yaml")
+
+      if File.file?(file)
+         Baltix.load_file(file)
+      else
+         {}
+      end.to_os(hash: true, array: true)
+   end
+
    def options
-      @options ||= DEFAULT_OPTIONS.deep_dup
+      @options ||= DEFAULT_OPTIONS.deep_dup.deep_merge(default_options)
    end
 
    def actions

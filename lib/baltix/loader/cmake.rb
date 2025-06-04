@@ -2,7 +2,7 @@
 # Sample gem is: hiredis
 #
 module Baltix::Loader::Cmake
-   def cmake file
+   def cmake file, dir
       log_in = `cmake .`
       debug(log_in)
    rescue Errno::ENOENT

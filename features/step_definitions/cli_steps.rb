@@ -29,12 +29,18 @@ When('developer loads baltix executable') do
    cli.run
 end
 
-Then('property {string} of options is {string}') do |property, value|
-   expect(space.options.send(property)).to eql(value)
+Then('property {string} of options is {string}') do |name, value|
+   names = name.split(".")
+   o = names[0...-1].reduce(space.options) {|os_, x| os_[x].nil? ? os_[x] = {}.to_os : os_[x].frozen? ? os_[x] = os_[x].dup : os_[x] }
+
+   expect(o.send(names.last)).to eql(value)
 end
 
-Then('space\'s options {string} is {string}') do |option, value|
-   expect(space.options[option]).to eql(value)
+Then('space\'s options {string} is {string}') do |name, value|
+   names = name.split(".")
+   o = names[0...-1].reduce(space.options) {|os_, x| os_[x].nil? ? os_[x] = {}.to_os : os_[x].frozen? ? os_[x] = os_[x].dup : os_[x] }
+
+   expect(o[names.last]).to eql(value)
 end
 
 Then('property {string} of space is of kind {string}') do |property, kind|
