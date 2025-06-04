@@ -37,6 +37,10 @@ class Baltix::Space
       valid: 'V',
    }
 
+   DEFAULT_IGNORE_PATH_TOKES =
+      %w(templates example examples sample samples spec test features
+         fixtures doc docs contrib demo acceptance conformance myapp website benchmarks benchmark
+         gemfiles misc steep)
 
    @@space = {}
    @@options = {}
@@ -263,7 +267,7 @@ class Baltix::Space
    end
 
    def ignored_path_tokens
-      @ignored_path_tokens ||= (read_attribute(:ignored_path_tokens) || [])
+      @ignored_path_tokens ||= (read_attribute(:ignored_path_tokens) || []) | DEFAULT_IGNORE_PATH_TOKES
    end
 
    def spec_type
