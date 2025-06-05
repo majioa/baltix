@@ -1,0 +1,20 @@
+on: [push]
+env:
+  KEY1: value1
+  KEY2: value2
+jobs:
+   test:
+      runs-on: alt-sisyphus
+      steps:
+       - id: installing-ruby
+         run: |
+            set -x
+            apt-get install -y ruby-devel rvm
+       - id: bundling-gems
+         run: |
+            set -x
+            bundle install
+       - id: running-tests
+         run: |
+            set -x
+            bundle exec cucumber
