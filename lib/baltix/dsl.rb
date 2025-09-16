@@ -230,7 +230,7 @@ class Baltix::DSL
                r[x.name] =
                   if r[x.name]
                      req = r[x.name].requirement.merge(x.requirement)
-                     group = x.groups | r[x.name].groups
+                     group = (x.groups || []) | r[x.name].groups
 
                      Bundler::Dependency.new(x.name, req, "type" => r[x.name].type, "group" => group)
                   else
@@ -270,15 +270,23 @@ class Baltix::DSL
       deps_but(original_deps_for(kinds_in)) | gemspec_deps
    end
 
+   def engine_version dsl_ruby
+      if dsl_ruby.is_a?(Bundler::RubyVersion)
+         Gem::Requirement.new(dsl_ruby.engine_versions.first)
+      else
+         dsl_ruby.engine_version
+      end
+   end
+
    def required_rubies
       return @required_rubies if @required_rubies
 
       rubies = {}
       rubies["ruby"] = spec.required_ruby_version if spec
       dsl_ruby = dsl.instance_variable_get(:@ruby_version)
-      rubies = rubies.deep_merge(dsl_ruby.engine => dsl_ruby.engine_version) if dsl_ruby
+      rubies = rubies.to_os.deep_merge(dsl_ruby.engine => engine_version(dsl_ruby)) if dsl_ruby
 
-      @required_rubies = rubies
+      @required_rubies = rubies.to_h
    end
 
    def required_rubygems
