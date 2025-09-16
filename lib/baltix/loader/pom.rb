@@ -3,7 +3,7 @@
 # requires "xmllint" to work
 #
 module Baltix::Loader::Pom
-   def pom propfile
+   def pom propfile, _rootdir
       dir = File.dirname(propfile)
 
       specfile = Dir.glob(File.join(dir, '*.gemspec')).first
