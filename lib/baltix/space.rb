@@ -300,7 +300,7 @@ class Baltix::Space
    end
 
    def is_disabled? source
-      options.ignored_path_tokens.any? { |t| /\/#{t}\// =~ source.source_file } ||
+      ignored_path_tokens.any? { |t| /\/#{t}\// =~ source.source_file } ||
          options.regarded_names.all? { |i| !i.match?(source.name) } &&
          options.ignored_names.any? { |i| i === source.name }
    end
