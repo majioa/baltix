@@ -228,7 +228,7 @@ class Baltix::Spec::Rpm
       },
       all_docs: {
          seq: %w(of_options >_sub_docs of_state),
-         default: nil,
+         default: [],
       },
       devel: {
          seq: %w(of_options >_devel of_state),

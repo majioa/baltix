@@ -482,7 +482,7 @@ module Baltix::Spec::Rpm::SpecCore
       when :lib
          runtime_dependencies
       when :devel
-         if host.is_app?
+         if host.is_app? && host == doc
             host.space.dependencies_for(kinds_in: :devel)
          else
             devel_dependencies

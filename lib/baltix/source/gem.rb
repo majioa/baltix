@@ -113,8 +113,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
                res
             end
          end.map do |(f, data)|
-            gemspecs = data[:gemspecs]
-            gemspecs.map do |gemspec|
+            data[:gemspecs].map do |gemspec|
                self.new(source_options(options_in.merge(spec: gemspec, source_file: f, loader: data[:loader])))
             end
          end.flatten.compact
@@ -377,8 +376,8 @@ class Baltix::Source::Gem < Baltix::Source::Base
 
    def detect_root
       if spec
-          files = Dir['**/**/**']
-          (!spec.files.any? || (spec.files - files).any?) && super || Dir.pwd
+         files = Dir['**/**/**']
+         (!spec.files.any? || (spec.files - files).any?) && super || Dir.pwd
       else
          super
       end
