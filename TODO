@@ -103,3 +103,12 @@ packethost - erroneous alias
 
 detect release in git - gem-rubocop-github
 detect release by rubygems - gem-minitest-spec-context
+
+
+
+oauth-tty - fix deps for devel/bin/runtime
+
+progressbar - position of ruby-progressbar and progressbar based on 1. spec main name, 2. shortnamess name
+source status - obsolete - (chef) and duplicate (progressbar)
+
+azure-for.ruby - compare old spec and newly generated, to ensure no avoid manual fixes
