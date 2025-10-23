@@ -23,7 +23,8 @@ class Baltix::DSL
 
    PLATFORMS = {
       ruby: true,
-      jruby: false
+      jruby: false,
+      mingw: false,
    }
 
    DSL_CONT_EXCEPTIONS = %w(LoadError SyntaxError TypeError Bundler::GemNotFound Bundler::VersionConflict

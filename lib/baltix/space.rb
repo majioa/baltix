@@ -44,6 +44,16 @@ class Baltix::Space
          fixtures doc docs contrib demo acceptance conformance myapp website benchmarks benchmark
          gemfiles misc steep)
 
+   PLATFORMS = {
+      ruby: true,
+      jruby: false,
+      mingw: false,
+   }
+
+   VERSIONS = {
+      /nonrelease/ => false
+   }
+
    @@space = {}
    @@options = {}
 
@@ -192,7 +202,7 @@ class Baltix::Space
          Baltix::DSL.merge_dependencies(deps, deps_in).sort_by {|x| x.name }
       end.select do |dep|
          (dep.groups & groups_in).any? && !(dep.groups & groups_out).any? &&
-         (dep.platforms.blank? || dep.platforms.any? {|p| Baltix::DSL::PLATFORMS[p] })
+         (dep.platforms.blank? || dep.platforms.any? {|p| PLATFORMS[p.to_sym] })
       end
    end
 
@@ -202,7 +212,7 @@ class Baltix::Space
 
       dependencies.select do |dep|
          (dep.groups & groups_in).any? && !(dep.groups & groups_out).any? &&
-         (dep.platforms.blank? || dep.platforms.any? {|p| Baltix::DSL::PLATFORMS[p] })
+         (dep.platforms.blank? || dep.platforms.any? {|p| PLATFORMS[p.to_sym] })
       end
    end
 
@@ -272,6 +282,10 @@ class Baltix::Space
       @ignored_path_tokens ||= (read_attribute(:ignored_path_tokens) || []) | DEFAULT_IGNORE_PATH_TOKES
    end
 
+   def regarded_path_tokens
+      @regarded_path_tokens ||= (read_attribute(:regarded_path_tokens) || [])
+   end
+
    def spec_type
       @spec_type ||= read_attribute(:spec_type) || spec && spec.class.to_s.split("::").last.downcase
    end
@@ -301,8 +315,37 @@ class Baltix::Space
       gen_spec(value)
    end
 
+   def is_platform_allowed? platform
+      case platform
+      when Gem::Platform
+         PLATFORMS.any? {|(name, valid)| platform === name ? valid : nil }
+      when String
+         !!PLATFORMS[platform.to_sym]
+      when NilClass
+         true
+      else
+         false
+      end
+   end
+
+   def is_version_allowed? version
+      if /^[0-9\.]+(\.(?<post>[a-z]*|))?$/ =~ version
+         !post || VERSIONS.reduce(true) {|res, (re, v)| res && (re =~ post ? v : false) }
+      end
+   end
+
    def is_disabled? source
-      ignored_path_tokens.any? { |t| /\/#{t}\// =~ source.source_file } ||
+      !is_platform_allowed?(source.platform) || !is_version_allowed?(source.version) ||
+         regarded_path_tokens.map do |t|
+            t.is_a?(Regexp) && %r{/[^/]*#{t}[^/]*/} || %r{/#{t}/}
+         end.all? do |t|
+            t !~ source.source_file
+         end &&
+         ignored_path_tokens.map do |t|
+            t.is_a?(Regexp) && %r{/[^/]*#{t}[^/]*/} || %r{/#{t}/}
+         end.any? do |t|
+            t =~ source.source_file
+         end ||
          options.regarded_names.all? { |i| !i.match?(source.name) } &&
          options.ignored_names.any? { |i| i === source.name }
    end
@@ -354,9 +397,9 @@ class Baltix::Space
       info("Sources:")
       stat_source_tree.each do |(path_in, stated_sources)|
          stated_sources.each do |(source, status)|
-            path = source.source_path_from(rootdir) if source.source_file
+            path = source.source_file_from(rootdir) if source.source_file
             stat = [STATUS_CHARS[status], TYPE_CHARS[source.type.to_sym]].join(" ")
-            namever = [source.name, source.version].compact.join(":")
+            namever = [source.name, source.version, source.platform.to_s].compact.join(":")
             info_in = "#{stat}#{namever} [#{path}]"
 
             info(info_in)
@@ -372,23 +415,26 @@ class Baltix::Space
       @stat_sources =
          read_attribute(:stat_sources) || Baltix::Source.search_in(rootdir, options).group_by do |x|
             [x.name, x.version].compact.join(":")
-         end.reduce([[],[]]) do |(r, used_in), (full_name, v)|
+         end.reduce([[],[]]) do |(r, used_in), (_full_name, v)|
             sorten =
                v.sort do |x,y|
                   c0 = ::Baltix::Source.loaders.index(x.loader) <=> ::Baltix::Source.loaders.index(y.loader)
                   c1 = c0 == 0 && x.name <=> y.name || c0
                   c2 = c1 == 0 && y.version <=> x.version || c1
-                  c3 = c2 == 0 && y.platform <=> x.platform || c2
+                  c3 = c2 == 0 && y.platform.to_s <=> x.platform.to_s || c2
                   c4 = c3 == 0 && y.source_names.grep(/gemspec/).count <=> x.source_names.grep(/gemspec/).count
 
                   c2 == 0 && c3 == 0 && c4 == 0 && x.rootdir.size <=> y.rootdir.size || c4 != 0 && c4 || c3 != 0 && c3 || c2
-               end.reduce([[], 0]) do |(res, index), source|
-                  dup = source.valid? && index > 0
-                  dup_index = source.valid? && index + 1 || index
-                  obs = used_in.include?(source.name)
-                  used_in = used_in | [source.name]
+               end.reduce([[], 0]) do |(res, index, base), source|
+                  dup = used_in.include?(source.name) && base && base.platform.to_s == source.platform.to_s && base.version == source.version && base.class == source.class
+                  dup_index = dup ? index + 1 : index
+                  obs = used_in.include?(source.name) && !dup
+                  if source.valid? && !is_disabled?(source)
+                     base = source
+                     used_in = used_in | [source.name]
+                  end
 
-                  [res | [[source, source_status(source, dup, obs)]], dup_index]
+                  [res | [[source, source_status(source, dup, obs)]], dup_index, base]
                end.first
 
             sorten[1..-1].each { |x| sorten.first.first.alias_to(x.first) }

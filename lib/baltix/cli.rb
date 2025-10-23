@@ -17,6 +17,7 @@ class Baltix::CLI
       regarded_names: [].freeze,
       aliased_names: [].freeze,
       ignored_path_tokens: [].freeze,
+      regarded_path_tokens: [].freeze,
       spec_file: nil,
       available_gem_list: {}.to_os.freeze,
       maintainer: {}.to_os.freeze,
@@ -39,7 +40,7 @@ class Baltix::CLI
          OptionParser.new do |opts|
             opts.banner = "Usage: baltix.rb [options & actions]"
 
-            opts.on("-r", "--rootdir=FOLDER", String, "Root folder to scan the sources") do |folder|
+            opts.on("-d", "--rootdir=FOLDER", String, "Root folder to scan the sources") do |folder|
                options[:rootdir] = folder
             end
 
@@ -73,8 +74,12 @@ class Baltix::CLI
                options.spec_file = file
             end
 
-            opts.on("-i", "--ignore-path-tokens=[LIST]", Array, "Ignore sources by a contained in its path token, and passed as a comma-separated list") do |list|
+            opts.on("-i", "--ignore-path-tokens=LIST", Array, "Ignore sources by a contained in its path token, and passed as a comma-separated list") do |list|
                options.ignored_path_tokens.concat(list.compact)
+            end
+
+            opts.on("-r", "--regard-path-tokens=LIST", Array, "Regard sources by a contained in its path token, and passed as a comma-separated list") do |list|
+               options.regarded_path_tokens.concat(list.compact)
             end
 
             opts.on("--maintainer-name=NAME", String, "Name of the maintainer to use on spec generation") do |name|

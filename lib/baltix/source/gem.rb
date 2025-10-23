@@ -70,6 +70,7 @@ class Baltix::Source::Gem < Baltix::Source::Base
          if version
             spec.version = Gem::Version.new(version)
          end
+
          spec.require_paths = options_in["source-lib-folders"] if options_in["source-lib-folders"]
 
          spec

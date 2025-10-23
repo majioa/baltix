@@ -379,16 +379,14 @@ class Baltix::Source::Base
       @aliases = aliases | sources.flatten
    end
 
-   # rebases source_file to path base and returns.
-   def source_path_from path
+   # rebases source_file to path base + source file itself and returns.
+   def source_file_from path
       file =
          if source_file.include?(path)
             source_file[path.size + 1..-1]
          else
             source_file
          end
-
-      File.dirname(file)
    end
 
    # document file array, defaulted to blank array
