@@ -15,6 +15,8 @@ module Baltix::Loader
       alias_method :require_orig, :require
 
       def require path, *args
+         return true if require_embedded
+
          paths = $:.map {|x| patha = (x =~ /^\// ? x : File.join(Dir.pwd, x)) }.map {|p| File.expand_path(File.join(p, path + "*")) }
          files = paths.map {|x| Dir[x] }.flatten.uniq.select {|x| x =~ %r{#{@dir}}}
 
@@ -36,18 +38,18 @@ module Baltix::Loader
                end
             end
          end
-      rescue LoadError
+      end
+
+      def require_embedded path
          unless File.absolute_path?(path)
             begin
                # try loading extension
                require_relative('extensions/' + path)
             rescue LoadError
+            else
+               return true
             end
          end
-
-         true
-      #rescue Exception
-      #  binding.pry
       end
 
       def method_missing name, *parms, **parmh

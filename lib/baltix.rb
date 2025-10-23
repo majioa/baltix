@@ -56,6 +56,7 @@ end
 
 {
   :Hoe => "hoe",
+  :Levitate => "levitate",
   :Echoe => "echoe",
   :Olddoc => "olddoc",
   :Wrongdoc => "olddoc",
