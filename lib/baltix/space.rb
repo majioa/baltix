@@ -11,6 +11,8 @@ class Baltix::Space
 
    class InvalidSpaceFileError < StandardError; end
 
+   SERIALIZE_NAMES = %i(spec_type rootdir stat_sources)
+
    TYPES = {
       sources: Baltix::Source
    }
@@ -303,6 +305,14 @@ class Baltix::Space
       ignored_path_tokens.any? { |t| /\/#{t}\// =~ source.source_file } ||
          options.regarded_names.all? { |i| !i.match?(source.name) } &&
          options.ignored_names.any? { |i| i === source.name }
+   end
+
+   def store filename = '.space'
+      state = SERIALIZE_NAMES.reduce({}.to_os) {|res, name| res.merge(name => send(name)) }
+
+      File.open(filename, "w+") {|f| f.puts(state.to_yaml) }
+
+      self
    end
 
    protected

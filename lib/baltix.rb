@@ -38,6 +38,7 @@ module Baltix
                   Baltix::Spec::Rpm,
                   Baltix::Spec::Rpm::Name,
                   Baltix::Spec::Rpm::Secondary,
+                  Baltix::DSL,
                   Gem::Specification,
                   Gem::Version,
                   Gem::Dependency,
@@ -45,7 +46,9 @@ module Baltix
                   OpenStruct,
                   Symbol,
                   Time,
-                  Date
+                  Date,
+                  Pathname,
+                  File
                ])
          else
             YAML.load(string)
